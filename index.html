@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holmes Production — Congés</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F7F4EF;--dark:#1A1A18;--gold:#C9A84C;--gold-light:#E8D5A3;--rust:#C4622D;--sage:#6B8F71;--muted:#8A8880;--border:#DDD9D0;--white:#FFFFFF;--r:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
+#loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--dark);flex-direction:column;gap:16px;}
+.loading-logo{font-family:'Libre Baskerville',serif;font-size:26px;color:#fff;}.loading-logo span{color:var(--gold);}
+.loading-spinner{width:32px;height:32px;border:3px solid #444;border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--dark);display:none;}
+.lbox{background:var(--cream);border-radius:20px;padding:52px 44px;width:400px;max-width:95vw;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.4);}
+.llogo{font-family:'Libre Baskerville',serif;font-size:26px;margin-bottom:5px;}.llogo span{color:var(--gold);}
+.lsub{color:var(--muted);font-size:13px;margin-bottom:32px;}
+.lang-row{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
+.lbtn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;transition:.2s;}
+.lbtn.active{background:var(--dark);color:#fff;border-color:var(--dark);}
+.fg{margin-bottom:14px;text-align:left;}
+.fg label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;transition:.2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);}
+.fg textarea{resize:vertical;min-height:70px;}
+.btn-pri{width:100%;padding:13px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:6px;}
+.lerr{color:var(--rust);font-size:13px;margin-top:10px;display:none;}
+#app{display:none;min-height:100vh;}
+.topbar{background:var(--dark);color:#fff;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;}
+.tlogo{font-family:'Libre Baskerville',serif;font-size:17px;}.tlogo span{color:var(--gold);}
+.tright{display:flex;align-items:center;gap:16px;}
+.tuser{font-size:12px;color:#aaa;}.tuser strong{color:#fff;}
+.tlang button{background:none;border:none;color:#888;font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px;}
+.tlang button.active{color:var(--gold);font-weight:600;}
+.btn-out{background:none;border:1px solid #444;color:#ccc;padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-out:hover{border-color:var(--gold);color:#fff;}
+.layout{display:flex;min-height:calc(100vh - 58px);}
+.sidebar{width:225px;background:#fff;border-right:1px solid var(--border);padding:18px 0;flex-shrink:0;}
+.nlabel{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:10px 18px 4px;}
+.nitem{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;font-size:13px;transition:.15s;border-left:3px solid transparent;color:var(--dark);}
+.nitem:hover{background:var(--cream);}.nitem.active{background:var(--cream);border-left-color:var(--gold);font-weight:600;}
+.content{flex:1;padding:26px 30px;overflow-y:auto;}
+.ptitle{font-family:'Libre Baskerville',serif;font-size:23px;margin-bottom:4px;}
+.psub{color:var(--muted);font-size:13px;margin-bottom:22px;}
+.cards{display:flex;gap:13px;flex-wrap:wrap;margin-bottom:22px;}
+.card{background:#fff;border-radius:var(--r);padding:16px 20px;border:1px solid var(--border);flex:1;min-width:140px;}
+.clabel{font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.cval{font-family:'Libre Baskerville',serif;font-size:28px;font-weight:700;line-height:1;}
+.cval.gold{color:var(--gold);}.cval.sage{color:var(--sage);}.cval.rust{color:var(--rust);}.cval.blue{color:#2B6CB0;}
+.csub{font-size:11px;color:var(--muted);margin-top:4px;}.cdead{font-size:10px;color:var(--rust);margin-top:3px;font-weight:600;}
+.twrap{background:#fff;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:18px;}
+.thead2{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.ttitle{font-weight:600;font-size:13px;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:8px 13px;background:var(--cream);border-bottom:1px solid var(--border);}
+td{padding:10px 13px;border-bottom:1px solid #F0EDE8;font-size:12px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}tr:hover td{background:#FAFAF8;}
+.recup-foot td{background:var(--cream);font-weight:700;}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.bpl{background:#E8D5A3;color:#6B4E0A;}.brtt{background:#CCE5FF;color:#0A4A6B;}
+.bsl{background:#F8D7DA;color:#6B1A1A;}.brecup{background:#D4EDDA;color:#1A6B35;}
+.bother{background:#E2D9F3;color:#4A1A6B;}.bcss{background:#F0F0F0;color:#555;}
+.bpend{background:#FFF3CD;color:#8B6A1A;}.bappr{background:#D4EDDA;color:#1A6B35;}.bref{background:#F8D7DA;color:#6B1A1A;}
+.bfut{background:#E8F4FF;color:#0A4A6B;}
+.btn{padding:7px 15px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;transition:.2s;}
+.btn-dark{background:var(--dark);color:#fff;}.btn-dark:hover{background:#2d2d2a;}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-ol{background:none;border:1.5px solid var(--border);color:var(--dark);}.btn-ol:hover{border-color:var(--dark);}
+.btn-appr{background:var(--sage);color:#fff;padding:4px 10px;font-size:11px;border-radius:5px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-ref{background:var(--rust);color:#fff;padding:4px 10px;font-size:11px;border-radius:5px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;}
+.moverlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:30px;width:470px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.mtitle{font-family:'Libre Baskerville',serif;font-size:19px;margin-bottom:4px;}
+.msub{color:var(--muted);font-size:12px;margin-bottom:20px;}
+.frow{display:flex;gap:11px;margin-bottom:13px;}.frow .fg{flex:1;margin-bottom:0;}
+.mact{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;}
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--border);margin-bottom:18px;flex-wrap:wrap;}
+.tab{padding:8px 15px;font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted);transition:.15s;}
+.tab:hover{color:var(--dark);}.tab.active{color:var(--dark);border-bottom-color:var(--gold);font-weight:600;}
+.tcontent{display:none;}.tcontent.active{display:block;}
+.phead{background:var(--dark);color:#fff;border-radius:var(--r);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+.pavatar{width:46px;height:46px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-size:19px;color:var(--dark);font-weight:700;flex-shrink:0;}
+.pname{font-family:'Libre Baskerville',serif;font-size:18px;}.pmeta{font-size:11px;color:#bbb;margin-top:2px;}
+.calwrap{background:#fff;border-radius:var(--r);border:1px solid var(--border);overflow:hidden;}
+.calhead{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.calnav{display:flex;align-items:center;gap:10px;}.calnav button{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:16px;}
+.calmonthlbl{font-weight:600;font-size:14px;min-width:155px;text-align:center;}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);}
+.caldh{text-align:center;padding:7px 3px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);background:var(--cream);}
+.calcell{min-height:72px;border-right:1px solid #F0EDE8;border-bottom:1px solid #F0EDE8;padding:4px 5px;}
+.calcell:nth-child(7n){border-right:none;}.calcell.we{background:#FAFAF8;}.calcell.om{opacity:.2;}.calcell.ferie{background:#FFF8E7;}
+.caldate{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.today-num{background:var(--gold);color:#fff;border-radius:50%;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;}
+.calpill{font-size:9px;padding:1px 4px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5;}
+.calleg{padding:11px 16px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;}
+.legitem{display:flex;align-items:center;gap:5px;font-size:11px;}
+.legdot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.simbox{background:#fff;border:2px solid var(--gold);border-radius:var(--r);padding:20px 22px;margin-bottom:22px;}
+.simtitle{font-weight:600;font-size:13px;margin-bottom:14px;}
+.simrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.simrow label{font-size:12px;font-weight:600;color:var(--muted);}
+.simrow input[type=date]{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.simrow input[type=date]:focus{border-color:var(--gold);}
+.simresults{display:flex;gap:12px;flex-wrap:wrap;}
+.simcard{background:var(--cream);border-radius:8px;padding:12px 16px;flex:1;min-width:130px;border:1px solid var(--border);}
+.simcard .sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:4px;}
+.simcard .sv{font-family:'Libre Baskerville',serif;font-size:22px;font-weight:700;}
+.simcard .sv.pos{color:var(--sage);}.simcard .sv.neg{color:var(--rust);}.simcard .sv.neu{color:var(--gold);}
+.simcard .sd{font-size:10px;color:var(--muted);margin-top:3px;}
+.notif{position:fixed;top:18px;right:18px;background:var(--dark);color:#fff;padding:12px 16px;border-radius:10px;font-size:12px;z-index:9999;transform:translateX(130%);transition:.3s;max-width:300px;}
+.notif.show{transform:translateX(0);}.notif.success{border-left:4px solid var(--sage);}.notif.error{border-left:4px solid var(--rust);}.notif.info{border-left:4px solid var(--gold);}
+.alert{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:13px;}
+.alert-w{background:#FFF8E7;border:1px solid var(--gold-light);color:#8B6A1A;}
+.alert-i{background:#EEF4FF;border:1px solid #C7D9FF;color:#1A3A8B;}
+.stitle{font-weight:600;font-size:13px;margin-bottom:12px;margin-top:4px;}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
+.pwbanner{background:#FFF8E7;border:1px solid var(--gold-light);border-radius:8px;padding:11px 15px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.pwbanner span{font-size:12px;color:#8B6A1A;}
+.row-future td{opacity:.65;font-style:italic;}
+@media(max-width:768px){.sidebar{display:none;}.content{padding:13px;}.cards{flex-direction:column;}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+<div class="notif" id="notif"></div>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loading-logo">Holmes <span>Production</span></div>
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lbox">
+    <div class="llogo">Holmes <span>Production</span></div>
+    <div class="lsub" id="lsub">Gestion des congés et absences</div>
+    <div class="lang-row">
+      <button class="lbtn active" onclick="setLang('fr')">FR</button>
+      <button class="lbtn" onclick="setLang('en')">EN</button>
+    </div>
+    <div class="fg"><label id="lemail-lbl">Adresse email</label>
+      <input type="email" id="lemail" placeholder="vous@holmesproduction.com">
+    </div>
+    <div class="fg"><label id="lpw-lbl">Mot de passe</label>
+      <input type="password" id="lpw" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-pri" onclick="doLogin()" id="lbtn">Se connecter</button>
+    <div class="lerr" id="lerr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tlogo">Holmes <span>Production</span></div>
+    <div class="tright">
+      <div class="tlang" style="display:flex;gap:4px">
+        <button onclick="setLang('fr')" id="tlf" class="active">FR</button>
+        <button onclick="setLang('en')" id="tle">EN</button>
+      </div>
+      <div class="tuser"><strong id="tname">—</strong></div>
+      <button class="btn-out" onclick="doLogout()" id="tbtnout">Déconnexion</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="moverlay" id="m-req">
+  <div class="modal">
+    <div class="mtitle">Nouvelle demande de congé</div>
+    <div class="msub">La demande sera transmise à Margaux pour validation</div>
+    <div class="fg"><label>Type de congé</label>
+      <select id="rtype" onchange="updBalInfo()">
+        <option value="PL">Congés payés (CP)</option><option value="RTT">RTT</option>
+        <option value="SL">Congé maladie</option><option value="RECUP">Récupération</option>
+        <option value="CSS">Congé sans solde</option><option value="MAT">Maternité / Paternité</option>
+        <option value="FAM">Événement familial</option><option value="OTHER">Autre</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date de début</label><input type="date" id="rstart" onchange="updBalInfo()"></div>
+      <div class="fg"><label>Date de fin</label><input type="date" id="rend" onchange="updBalInfo()"></div>
+    </div>
+    <div class="fg"><label>Demi-journée ?</label>
+      <select id="rhalf" onchange="updBalInfo()">
+        <option value="full">Journée(s) complète(s)</option>
+        <option value="am">Matin seulement (0.5 j)</option>
+        <option value="pm">Après-midi seulement (0.5 j)</option>
+      </select>
+    </div>
+    <div id="rbalinfo"></div>
+    <div class="fg"><label>Commentaire (optionnel)</label><textarea id="rcomment" placeholder="Précisions..."></textarea></div>
+    <div class="mact">
+      <button class="btn btn-ol" onclick="closeM('m-req')">Annuler</button>
+      <button class="btn btn-dark" onclick="submitReq()">Envoyer la demande</button>
+    </div>
+  </div>
+</div>
+
+<div class="moverlay" id="m-emp">
+  <div class="modal">
+    <div class="mtitle">Nouveau salarié</div><div class="msub">Mot de passe temporaire : Holmes2026!</div>
+    <div class="frow"><div class="fg"><label>Prénom</label><input type="text" id="efn"></div><div class="fg"><label>Nom</label><input type="text" id="eln"></div></div>
+    <div class="fg"><label>Email</label><input type="email" id="eemail"></div>
+    <div class="fg"><label>Poste</label><input type="text" id="ejob"></div>
+    <div class="fg"><label>Date d'entrée</label><input type="date" id="eentry"></div>
+    <div class="fg"><label>Rôle</label>
+      <select id="erole"><option value="employee">Salarié</option><option value="manager">Salarié + Validateur</option><option value="readonly">Lecture seule</option><option value="admin">Administrateur</option></select>
+    </div>
+    <div class="frow"><div class="fg"><label>Solde CP initial</label><input type="text" id="ecp" value="0"></div><div class="fg"><label>Solde RTT initial</label><input type="text" id="ertt" value="0"></div></div>
+    <div class="mact"><button class="btn btn-ol" onclick="closeM('m-emp')">Annuler</button><button class="btn btn-dark" onclick="saveEmp()">Créer</button></div>
+  </div>
+</div>
+
+<div class="moverlay" id="m-radd">
+  <div class="modal">
+    <div class="mtitle">Saisir des jours travaillés</div><div class="msub">Week-end ou jours fériés travaillés</div>
+    <div class="fg"><label>Dates travaillées</label><input type="text" id="ra-dates" placeholder="Ex : 7 & 8 mars"></div>
+    <div class="fg"><label>Numéro de mission</label><input type="text" id="ra-job" placeholder="Ex : 1215"></div>
+    <div class="fg"><label>Nombre de jours travaillés</label><input type="text" id="ra-nb" placeholder="Ex : 2"></div>
+    <div class="mact"><button class="btn btn-ol" onclick="closeM('m-radd')">Annuler</button><button class="btn btn-dark" onclick="saveRAdd()">Enregistrer</button></div>
+  </div>
+</div>
+
+<div class="moverlay" id="m-rtake">
+  <div class="modal">
+    <div class="mtitle">Poser des jours de récupération</div><div class="msub" id="rt-sub">—</div>
+    <div class="fg"><label>Date(s) posée(s)</label><input type="text" id="rt-dates" placeholder="Ex : 15 & 18 mai"></div>
+    <div class="fg"><label>Nombre de jours</label><input type="text" id="rt-nb" placeholder="Ex : 2"></div>
+    <input type="hidden" id="rt-uid"><input type="hidden" id="rt-idx">
+    <div class="mact"><button class="btn btn-ol" onclick="closeM('m-rtake')">Annuler</button><button class="btn btn-dark" onclick="saveRTake()">Enregistrer</button></div>
+  </div>
+</div>
+
+
+<!-- MODAL: Admin -->
+
+<!-- MODAL: Cancel request (employee) -->
+<div class="moverlay" id="m-cancel-req">
+  <div class="modal">
+    <div class="mtitle">Demande d'annulation</div>
+    <div class="msub" id="cancel-req-sub">—</div>
+    <div class="fg"><label>Motif de l'annulation (optionnel)</label>
+      <textarea id="cancel-req-comment" placeholder="Précisez la raison..."></textarea>
+    </div>
+    <input type="hidden" id="cancel-req-id">
+    <div class="mact">
+      <button class="btn btn-ol" onclick="closeM('m-cancel-req')">Fermer</button>
+      <button class="btn btn-ref" onclick="submitCancelReq()">Demander l'annulation</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit request (admin) -->
+<div class="moverlay" id="m-edit-req">
+  <div class="modal">
+    <div class="mtitle">&#9881;&#65039; Modifier une demande</div>
+    <div class="msub" id="edit-req-sub">—</div>
+    <div class="fg"><label>Type de congé</label>
+      <select id="edit-req-type">
+        <option value="PL">Congés payés (CP)</option><option value="RTT">RTT</option>
+        <option value="SL">Congé maladie</option><option value="RECUP">Récupération</option>
+        <option value="CSS">Congé sans solde</option><option value="MAT">Maternité / Paternité</option>
+        <option value="FAM">Événement familial</option><option value="OTHER">Autre</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date de début</label><input type="date" id="edit-req-start"></div>
+      <div class="fg"><label>Date de fin</label><input type="date" id="edit-req-end"></div>
+    </div>
+    <div class="fg"><label>Demi-journée ?</label>
+      <select id="edit-req-half">
+        <option value="full">Journée(s) complète(s)</option>
+        <option value="am">Matin (0.5 j)</option>
+        <option value="pm">Après-midi (0.5 j)</option>
+      </select>
+    </div>
+    <div class="fg"><label>Statut</label>
+      <select id="edit-req-status">
+        <option value="approved">Approuvé</option>
+        <option value="pending">En attente</option>
+        <option value="refused">Refusé</option>
+      </select>
+    </div>
+    <div class="fg"><label>Commentaire</label>
+      <textarea id="edit-req-comment" placeholder="Optionnel..."></textarea>
+    </div>
+    <input type="hidden" id="edit-req-id">
+    <input type="hidden" id="edit-req-uid">
+    <input type="hidden" id="edit-req-old-days">
+    <input type="hidden" id="edit-req-old-type">
+    <input type="hidden" id="edit-req-old-status">
+    <div class="mact">
+      <button class="btn btn-ol" onclick="closeM('m-edit-req')">Annuler</button>
+      <button class="btn btn-dark" onclick="saveEditReq()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+<div class="moverlay" id="m-admin-req">
+  <div class="modal">
+    <div class="mtitle">&#9881;&#65039; Poser des jours pour un salari&#233;</div>
+    <div class="msub">Action admin &mdash; directement approuv&#233;</div>
+    <div class="fg"><label>Salari&#233;</label><select id="admin-uid"></select></div>
+    <div class="fg"><label>Type de cong&#233;</label>
+      <select id="admin-type">
+        <option value="PL">Cong&#233;s pay&#233;s (CP)</option><option value="RTT">RTT</option>
+        <option value="SL">Cong&#233; maladie</option><option value="RECUP">R&#233;cup&#233;ration</option>
+        <option value="CSS">Cong&#233; sans solde</option><option value="MAT">Maternit&#233; / Paternit&#233;</option>
+        <option value="FAM">&#201;v&#233;nement familial</option><option value="OTHER">Autre</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Date de début</label><input type="date" id="admin-start"></div>
+      <div class="fg"><label>Date de fin</label><input type="date" id="admin-end"></div>
+    </div>
+    <div class="fg"><label>Demi-journée ?</label>
+      <select id="admin-half">
+        <option value="full">Journée(s) complète(s)</option>
+        <option value="am">Matin seulement (0.5 j)</option>
+        <option value="pm">Après-midi seulement (0.5 j)</option>
+      </select>
+    </div>
+    <div class="fg"><label>Commentaire</label><textarea id="admin-comment" placeholder="Optionnel..."></textarea></div>
+    <div class="mact">
+      <button class="btn btn-ol" onclick="closeM('m-admin-req')">Annuler</button>
+      <button class="btn btn-dark" onclick="adminAddReq()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<div class="moverlay" id="m-pw">
+  <div class="modal">
+    <div class="mtitle">Changer votre mot de passe</div><div class="msub">Minimum 8 caractères</div>
+    <div class="fg"><label>Nouveau mot de passe</label><input type="password" id="pw1"></div>
+    <div class="fg"><label>Confirmer</label><input type="password" id="pw2"></div>
+    <div class="mact"><button class="btn btn-dark" onclick="doChgPw()">Confirmer</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════
+const SUPA_URL = 'https://trhvvoxypsmeuuxvpebq.supabase.co';
+
+// EmailJS config
+const EJS_SERVICE = 'service_sgcgtmp';
+const EJS_TEMPLATE = 'template_91b9b9h';
+const EJS_KEY = 'DUxI2EU5Dc7YYkCj8';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRyaHZ2b3h5cHNtZXV1eHZwZWJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzc4NzQsImV4cCI6MjA5MzY1Mzg3NH0.vtFFZtTZpUidFTYdSupLimXPO5stNheOE47gbY1oFLc';
+
+// Use official Supabase JS client
+const _supabase = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const db = {
+  async getUsers() {
+    const {data,error} = await _supabase.from('users').select('*').order('name');
+    if(error) throw new Error(error.message);
+    return data||[];
+  },
+  async getUser(id) {
+    const {data,error} = await _supabase.from('users').select('*').eq('id',id).single();
+    if(error) return null;
+    return data;
+  },
+  async getUserByEmail(email) {
+    const {data,error} = await _supabase.from('users').select('*').or(`email.eq.${email},email2.eq.${email}`);
+    if(error) throw new Error(error.message);
+    return data && data.length > 0 ? data[0] : null;
+  },
+  async updateUser(id, data) {
+    const {error} = await _supabase.from('users').update(data).eq('id',id);
+    if(error) throw new Error(error.message);
+  },
+  async createUser(data) {
+    const {error} = await _supabase.from('users').insert(data);
+    if(error) throw new Error(error.message);
+  },
+  async getRequests() {
+    const {data,error} = await _supabase.from('requests').select('*').order('start_date',{ascending:false});
+    if(error) throw new Error(error.message);
+    return data||[];
+  },
+  async createRequest(data) {
+    const {error} = await _supabase.from('requests').insert(data);
+    if(error) throw new Error(error.message);
+  },
+  async updateRequest(id, data) {
+    const {error} = await _supabase.from('requests').update(data).eq('id',id);
+    if(error) throw new Error(error.message);
+  },
+  async getRecup(uid) {
+    const {data,error} = await _supabase.from('recup_entries').select('*').eq('user_id',uid).order('id');
+    if(error) throw new Error(error.message);
+    return data||[];
+  },
+  async createRecup(data) {
+    const {data:d,error} = await _supabase.from('recup_entries').insert(data).select();
+    if(error) throw new Error(error.message);
+    return d||[];
+  },
+  async updateRecup(id, data) {
+    const {error} = await _supabase.from('recup_entries').update(data).eq('id',id);
+    if(error) throw new Error(error.message);
+  },
+};
+
+// ═══════════════════════════════════════
+// INITIAL DATA SEED
+// ═══════════════════════════════════════
+const TPW = 'Holmes2026!';
+const TODAY = '2026-05-31';
+
+const INITIAL_USERS = [
+  {id:'admin',  email:'akremer@hr4team.com',         email2:'parishr@holmesproduction.com', name:'Aline Kremer',          role:'admin',    job:'HR Manager',              entry:'2020-01-01', cp_base:0,     rtt_base:0,    pw:TPW, must_pw:false},
+  {id:'margaux',email:'margaux@holmesproduction.com',email2:null, name:'Margaux Godeau Canac', role:'manager',  job:'Managing Director',     entry:'2025-09-08', cp_base:10.17, rtt_base:5.77, pw:TPW, must_pw:true},
+  {id:'ley',    email:'ley@holmesproduction.com',    email2:null, name:'Ley Lalanne',           role:'employee', job:'Production Assistant',entry:'2025-09-15', cp_base:11.69, rtt_base:3.20, pw:TPW, must_pw:true},
+  {id:'bettina',email:'bettina@holmesproduction.com',email2:null, name:'Bettina Diss',          role:'readonly', job:'Studio Manager',          entry:'2025-10-20', cp_base:5.33,  rtt_base:3.19, pw:TPW, must_pw:true},
+  {id:'nikolai',email:'nikolai@holmesproduction.com',email2:null, name:'Nikolaï Sabatier',      role:'employee', job:'Kit Manager',             entry:'2025-11-24', cp_base:10.90, rtt_base:3.69, pw:TPW, must_pw:true},
+  {id:'gabrielle',email:'gabrielle@holmesproduction.com',email2:null,name:'Gabrielle Lussier',  role:'employee', job:'Production Coordinator',  entry:'2026-03-02', cp_base:4.17,  rtt_base:1.60, pw:TPW, must_pw:true},
+  {id:'laura',  email:'laura@holmesproduction.com',  email2:null, name:'Laura Holmes',          role:'readonly', job:'President',              entry:'2020-01-01', cp_base:0,     rtt_base:0,    pw:TPW, must_pw:true},
+  {id:'lea',    email:'lea@holmesproduction.com',    email2:null, name:'Lea DUPEYRON',          role:'employee', job:'—',                       entry:'2026-06-01', cp_base:0,     rtt_base:0,    pw:TPW, must_pw:true},
+  {id:'elsa',   email:'elsa@holmesproduction.com',   email2:null, name:'Elsa PUANGSUDRAC',      role:'employee', job:'—',                       entry:'2026-09-01', cp_base:0,     rtt_base:0,    pw:TPW, must_pw:true},
+];
+
+function buildInitialRequests() {
+  const R=[];let id=1;
+  const mk=(uid,type,start,end,comment='')=>{
+    R.push({id:'r'+(id++),user_id:uid,type,start_date:start,end_date:end,days:wdCount(start,end),status:'approved',comment,created_at:start});
+  };
+  mk('margaux','RECUP','2025-10-31','2025-10-31');mk('margaux','RECUP','2025-12-19','2025-12-19');
+  mk('margaux','RTT','2025-12-22','2025-12-23');mk('margaux','PL','2025-12-24','2025-12-24');
+  mk('margaux','PL','2025-12-26','2025-12-31');mk('margaux','PL','2026-01-02','2026-01-02');
+  mk('margaux','RECUP','2026-02-23','2026-02-24');mk('margaux','RECUP','2026-04-03','2026-04-03');
+  mk('margaux','RECUP','2026-04-22','2026-04-24');mk('margaux','RECUP','2026-04-27','2026-04-28');
+  mk('margaux','RECUP','2026-07-13','2026-07-13');
+  mk('ley','RECUP','2025-10-02','2025-10-03');mk('ley','RECUP','2025-10-31','2025-10-31');
+  mk('ley','RECUP','2025-11-03','2025-11-03');mk('ley','RECUP','2025-12-04','2025-12-04');
+  mk('ley','RTT','2025-12-22','2025-12-24');mk('ley','RTT','2025-12-26','2025-12-26');
+  mk('ley','PL','2025-12-29','2025-12-31');mk('ley','PL','2026-01-02','2026-01-02');
+  mk('ley','RECUP','2026-01-29','2026-01-30');mk('ley','RECUP','2026-02-02','2026-02-03');
+  mk('ley','RECUP','2026-03-04','2026-03-04');mk('ley','RECUP','2026-03-09','2026-03-11');
+  mk('ley','RECUP','2026-03-13','2026-03-13');mk('ley','RECUP','2026-03-16','2026-03-16');
+  mk('ley','RTT','2026-05-28','2026-05-29');mk('ley','RTT','2026-06-01','2026-06-01');
+  mk('ley','PL','2026-06-02','2026-06-05');
+  mk('bettina','RTT','2025-12-24','2025-12-24');mk('bettina','PL','2025-12-26','2025-12-31');
+  mk('bettina','PL','2026-01-02','2026-01-02');mk('bettina','RTT','2026-01-09','2026-01-09');
+  mk('bettina','OTHER','2026-02-10','2026-02-13','Autre absence');
+  mk('bettina','PL','2026-04-17','2026-04-17');mk('bettina','PL','2026-04-20','2026-04-21');
+  mk('bettina','RTT','2026-05-13','2026-05-13');mk('bettina','RTT','2026-05-15','2026-05-15');
+  mk('bettina','PL','2026-06-26','2026-06-26');mk('bettina','PL','2026-07-10','2026-07-10');
+  mk('bettina','PL','2026-07-13','2026-07-13');mk('bettina','PL','2026-08-03','2026-08-09');
+  mk('bettina','RTT','2026-08-10','2026-08-12');mk('bettina','PL','2026-08-13','2026-08-21');
+  mk('nikolai','OTHER','2025-12-19','2025-12-19','Autre absence');mk('nikolai','PL','2025-12-26','2025-12-26');
+  mk('nikolai','SL','2026-04-07','2026-04-21','Arrêt maladie');
+  mk('gabrielle','RECUP','2026-05-15','2026-05-15');mk('gabrielle','RECUP','2026-05-18','2026-05-20');
+  mk('gabrielle','PL','2026-08-03','2026-08-18');mk('gabrielle','RTT','2026-08-19','2026-08-21');
+  mk('gabrielle','RTT','2026-08-24','2026-08-24');mk('gabrielle','PL','2026-08-25','2026-08-28');
+  return R;
+}
+
+const INITIAL_RECUP = {
+  margaux:[
+    {dates:'Oct 25 & 26',job:'1167',worked:2,taken:2,taken_dates:'19 Déc + 23 Fév',remaining:0},
+    {dates:'Oct 18 & 19',job:'1170',worked:2,taken:2,taken_dates:'24 Fév / 3 Avr',remaining:0},
+    {dates:'Nov 15,22,29,30',job:'1177',worked:4,taken:4,taken_dates:'22/23/24/27 Avr',remaining:0},
+    {dates:'Jan 17 & 18',job:'1196',worked:2,taken:1,taken_dates:'28 Avr',remaining:1},
+    {dates:'Jan 24 & 25',job:'1200',worked:2,taken:2,taken_dates:'15 Mai & 2 Juil',remaining:0},
+    {dates:'Mar 22',job:'1212',worked:1,taken:1,taken_dates:'3 Juil',remaining:0},
+    {dates:'Mar 28',job:'1219',worked:1,taken:1,taken_dates:'13 Juil',remaining:0},
+    {dates:'Mar 29',job:'1220',worked:1,taken:0,taken_dates:'—',remaining:1},
+    {dates:'Avr 18',job:'1235',worked:1,taken:0,taken_dates:'—',remaining:1},
+  ],
+  ley:[
+    {dates:'Sep 27 & 28',job:'1151',worked:2,taken:2,taken_dates:'Oct 2 & 3',remaining:0},
+    {dates:'Oct 25 & 26',job:'1167',worked:2,taken:2,taken_dates:'Oct 31 & Nov 3',remaining:0},
+    {dates:'Nov 29',job:'1184',worked:1,taken:1,taken_dates:'Déc 4',remaining:0},
+    {dates:'Jan 17 & 18',job:'1182',worked:2,taken:2,taken_dates:'Jan 29 & 30',remaining:0},
+    {dates:'Jan 24 & 25',job:'1192',worked:2,taken:2,taken_dates:'Fév 2 & 3',remaining:0},
+    {dates:'Fév 21 & 22',job:'1187',worked:3,taken:3,taken_dates:'Mar 9,10,11',remaining:0},
+    {dates:'Fév 28 & Mar 1',job:'1208',worked:2,taken:2,taken_dates:'Mar 13 & 16',remaining:0},
+    {dates:'Mar 7',job:'1214',worked:1,taken:0.5,taken_dates:'Mar 4',remaining:0.5},
+  ],
+  gabrielle:[
+    {dates:'7 & 8 Mar',job:'Job 1215',worked:2,taken:1,taken_dates:'3 Avr',remaining:1},
+    {dates:'21 & 22 Mar',job:'Job 1212',worked:2,taken:2,taken_dates:'15 & 18 Mai',remaining:0},
+    {dates:'27 & 28 Mar',job:'Job 1220',worked:2,taken:2,taken_dates:'19 & 20 Mai',remaining:0},
+    {dates:'Avr 18',job:'Job 1235',worked:1,taken:0,taken_dates:'—',remaining:1},
+  ],
+};
+
+async function seedDatabase() {
+  try {
+    // Check if already seeded
+    const existing = await db.getUsers();
+    if (existing && existing.length > 0) return;
+
+    // Insert users
+    for (const u of INITIAL_USERS) {
+      await db.createUser(u);
+    }
+    // Insert requests
+    for (const r of buildInitialRequests()) {
+      await db.createRequest(r);
+    }
+    // Insert recup
+    for (const [uid, entries] of Object.entries(INITIAL_RECUP)) {
+      for (const e of entries) {
+        await db.createRecup({...e, user_id: uid});
+      }
+    }
+  } catch(e) {
+    console.error('Seed error:', e);
+  }
+}
+
+// ═══════════════════════════════════════
+// EXACT ABSENCE DAYS FOR CALENDAR
+// ═══════════════════════════════════════
+const ABSDAYS=[{"d":"2025-10-31","t":"RECUP","u":"margaux"},{"d":"2025-12-19","t":"RECUP","u":"margaux"},{"d":"2025-12-22","t":"RTT","u":"margaux"},{"d":"2025-12-23","t":"RTT","u":"margaux"},{"d":"2025-12-24","t":"PL","u":"margaux"},{"d":"2025-12-26","t":"PL","u":"margaux"},{"d":"2025-12-29","t":"PL","u":"margaux"},{"d":"2025-12-30","t":"PL","u":"margaux"},{"d":"2025-12-31","t":"PL","u":"margaux"},{"d":"2026-01-02","t":"PL","u":"margaux"},{"d":"2026-02-23","t":"RECUP","u":"margaux"},{"d":"2026-02-24","t":"RECUP","u":"margaux"},{"d":"2026-04-03","t":"RECUP","u":"margaux"},{"d":"2026-04-22","t":"RECUP","u":"margaux"},{"d":"2026-04-23","t":"RECUP","u":"margaux"},{"d":"2026-04-24","t":"RECUP","u":"margaux"},{"d":"2026-04-27","t":"RECUP","u":"margaux"},{"d":"2026-04-28","t":"RECUP","u":"margaux"},{"d":"2026-07-13","t":"RECUP","u":"margaux"},{"d":"2025-10-02","t":"RECUP","u":"ley"},{"d":"2025-10-03","t":"RECUP","u":"ley"},{"d":"2025-10-31","t":"RECUP","u":"ley"},{"d":"2025-11-03","t":"RECUP","u":"ley"},{"d":"2025-12-04","t":"RECUP","u":"ley"},{"d":"2025-12-22","t":"RTT","u":"ley"},{"d":"2025-12-23","t":"RTT","u":"ley"},{"d":"2025-12-24","t":"RTT","u":"ley"},{"d":"2025-12-26","t":"RTT","u":"ley"},{"d":"2025-12-29","t":"PL","u":"ley"},{"d":"2025-12-30","t":"PL","u":"ley"},{"d":"2025-12-31","t":"PL","u":"ley"},{"d":"2026-01-02","t":"PL","u":"ley"},{"d":"2026-01-29","t":"RECUP","u":"ley"},{"d":"2026-01-30","t":"RECUP","u":"ley"},{"d":"2026-02-02","t":"RECUP","u":"ley"},{"d":"2026-02-03","t":"RECUP","u":"ley"},{"d":"2026-03-04","t":"RECUP","u":"ley"},{"d":"2026-03-09","t":"RECUP","u":"ley"},{"d":"2026-03-10","t":"RECUP","u":"ley"},{"d":"2026-03-11","t":"RECUP","u":"ley"},{"d":"2026-03-13","t":"RECUP","u":"ley"},{"d":"2026-03-16","t":"RECUP","u":"ley"},{"d":"2026-05-28","t":"RTT","u":"ley"},{"d":"2026-05-29","t":"RTT","u":"ley"},{"d":"2026-06-01","t":"RTT","u":"ley"},{"d":"2026-06-02","t":"PL","u":"ley"},{"d":"2026-06-03","t":"PL","u":"ley"},{"d":"2026-06-04","t":"PL","u":"ley"},{"d":"2026-06-05","t":"PL","u":"ley"},{"d":"2025-12-24","t":"RTT","u":"bettina"},{"d":"2025-12-26","t":"PL","u":"bettina"},{"d":"2025-12-29","t":"PL","u":"bettina"},{"d":"2025-12-30","t":"PL","u":"bettina"},{"d":"2025-12-31","t":"PL","u":"bettina"},{"d":"2026-01-02","t":"PL","u":"bettina"},{"d":"2026-01-09","t":"RTT","u":"bettina"},{"d":"2026-02-10","t":"OTHER","u":"bettina"},{"d":"2026-02-11","t":"OTHER","u":"bettina"},{"d":"2026-02-12","t":"OTHER","u":"bettina"},{"d":"2026-02-13","t":"OTHER","u":"bettina"},{"d":"2026-04-17","t":"PL","u":"bettina"},{"d":"2026-04-20","t":"PL","u":"bettina"},{"d":"2026-04-21","t":"PL","u":"bettina"},{"d":"2026-05-13","t":"RTT","u":"bettina"},{"d":"2026-05-15","t":"RTT","u":"bettina"},{"d":"2026-06-26","t":"PL","u":"bettina"},{"d":"2026-07-10","t":"PL","u":"bettina"},{"d":"2026-07-13","t":"PL","u":"bettina"},{"d":"2026-08-03","t":"PL","u":"bettina"},{"d":"2026-08-04","t":"PL","u":"bettina"},{"d":"2026-08-05","t":"PL","u":"bettina"},{"d":"2026-08-06","t":"PL","u":"bettina"},{"d":"2026-08-07","t":"PL","u":"bettina"},{"d":"2026-08-10","t":"RTT","u":"bettina"},{"d":"2026-08-11","t":"RTT","u":"bettina"},{"d":"2026-08-12","t":"RTT","u":"bettina"},{"d":"2026-08-13","t":"PL","u":"bettina"},{"d":"2026-08-14","t":"PL","u":"bettina"},{"d":"2026-08-17","t":"PL","u":"bettina"},{"d":"2026-08-18","t":"PL","u":"bettina"},{"d":"2026-08-19","t":"PL","u":"bettina"},{"d":"2026-08-20","t":"PL","u":"bettina"},{"d":"2026-08-21","t":"PL","u":"bettina"},{"d":"2025-12-19","t":"OTHER","u":"nikolai"},{"d":"2025-12-26","t":"PL","u":"nikolai"},{"d":"2026-04-07","t":"SL","u":"nikolai"},{"d":"2026-04-08","t":"SL","u":"nikolai"},{"d":"2026-04-09","t":"SL","u":"nikolai"},{"d":"2026-04-10","t":"SL","u":"nikolai"},{"d":"2026-04-13","t":"SL","u":"nikolai"},{"d":"2026-04-14","t":"SL","u":"nikolai"},{"d":"2026-04-15","t":"SL","u":"nikolai"},{"d":"2026-04-16","t":"SL","u":"nikolai"},{"d":"2026-04-17","t":"SL","u":"nikolai"},{"d":"2026-04-20","t":"SL","u":"nikolai"},{"d":"2026-04-21","t":"SL","u":"nikolai"},{"d":"2026-05-13","t":"RTT","u":"nikolai","half":"pm"},{"d":"2026-05-15","t":"RTT","u":"nikolai"},{"d":"2026-05-15","t":"RECUP","u":"gabrielle"},{"d":"2026-05-18","t":"RECUP","u":"gabrielle"},{"d":"2026-05-19","t":"RECUP","u":"gabrielle"},{"d":"2026-05-20","t":"RECUP","u":"gabrielle"},{"d":"2026-08-03","t":"PL","u":"gabrielle"},{"d":"2026-08-04","t":"PL","u":"gabrielle"},{"d":"2026-08-05","t":"PL","u":"gabrielle"},{"d":"2026-08-06","t":"PL","u":"gabrielle"},{"d":"2026-08-07","t":"PL","u":"gabrielle"},{"d":"2026-08-10","t":"PL","u":"gabrielle"},{"d":"2026-08-11","t":"PL","u":"gabrielle"},{"d":"2026-08-12","t":"PL","u":"gabrielle"},{"d":"2026-08-13","t":"PL","u":"gabrielle"},{"d":"2026-08-14","t":"PL","u":"gabrielle"},{"d":"2026-08-17","t":"PL","u":"gabrielle"},{"d":"2026-08-18","t":"PL","u":"gabrielle"},{"d":"2026-08-19","t":"RTT","u":"gabrielle"},{"d":"2026-08-20","t":"RTT","u":"gabrielle"},{"d":"2026-08-21","t":"RTT","u":"gabrielle"},{"d":"2026-08-24","t":"RTT","u":"gabrielle"},{"d":"2026-08-25","t":"PL","u":"gabrielle"},{"d":"2026-08-26","t":"PL","u":"gabrielle"},{"d":"2026-08-27","t":"PL","u":"gabrielle"},{"d":"2026-08-28","t":"PL","u":"gabrielle"},{"d":"2026-05-20","t":"RECUP","u":"ley"},{"d":"2026-05-21","t":"RECUP","u":"ley"},{"d":"2026-05-22","t":"RECUP","u":"ley"},{"d":"2026-06-01","t":"RECUP","u":"margaux"},{"d":"2026-05-15","t":"RTT","u":"margaux"},{"d":"2026-07-02","t":"PL","u":"margaux"},{"d":"2026-07-03","t":"PL","u":"margaux"},{"d":"2026-08-03","t":"PL","u":"margaux"},{"d":"2026-08-04","t":"PL","u":"margaux"},{"d":"2026-08-05","t":"PL","u":"margaux"},{"d":"2026-08-06","t":"PL","u":"margaux"},{"d":"2026-08-07","t":"PL","u":"margaux"},{"d":"2026-08-10","t":"RTT","u":"margaux"},{"d":"2026-08-11","t":"PL","u":"margaux"},{"d":"2026-08-12","t":"PL","u":"margaux"},{"d":"2026-08-13","t":"PL","u":"margaux"},{"d":"2026-08-14","t":"PL","u":"margaux"},{"d":"2026-08-17","t":"RECUP","u":"margaux"},{"d":"2026-08-18","t":"RECUP","u":"margaux"},{"d":"2026-08-19","t":"RTT","u":"margaux"},{"d":"2026-08-20","t":"PL","u":"margaux"},{"d":"2026-08-21","t":"PL","u":"margaux"},{"d":"2026-08-24","t":"RTT","u":"margaux"},{"d":"2026-08-25","t":"PL","u":"margaux"},{"d":"2026-08-26","t":"PL","u":"margaux"},{"d":"2026-08-27","t":"PL","u":"margaux"},{"d":"2026-08-28","t":"PL","u":"margaux"}];
+
+const HOLIDAYS=new Set(["2025-11-01","2025-11-11","2025-12-25","2026-01-01","2026-04-06","2026-05-01","2026-05-08","2026-05-14","2026-05-25","2026-07-14","2026-08-15"]);
+const CALMAP={};
+ABSDAYS.forEach(e=>{if(!CALMAP[e.d])CALMAP[e.d]=[];CALMAP[e.d].push({uid:e.u,type:e.t});});
+
+// ═══════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════
+let LANG = localStorage.getItem('holmes_lang') || 'fr';
+let CURRENT_USER = null;
+let USERS = [];
+let REQUESTS = [];
+let RECUP = {};
+let CAL_MONTH = new Date().getMonth();
+let CAL_YEAR = new Date().getFullYear();
+
+// ═══════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════
+const T={
+  fr:{lsub:'Gestion des congés et absences',lemail:'Adresse email',lpw:'Mot de passe',lbtn:'Se connecter',lerr:'Email ou mot de passe incorrect.',logout:'Déconnexion',dashboard:'Tableau de bord',myleaves:'Mes congés',calendar:'Calendrier',requests:'Demandes',employees:'Salariés',overview:'Vue d\'ensemble',team:'Équipe',newreq:'Nouvelle demande',cp:'Congés Payés (CP)',rtt:'RTT',recup:'Récupération',history:'Historique',recup_tab:'Tableau de récupération',pending:'En attente',approved:'Approuvé',refused:'Refusé',future:'Planifié',approve:'Approuver',refuse:'Refuser',profile:'Profil',taken:'Posés',remaining:'Restant',acquired:'Acquis',add_worked:'+ Jours travaillés',take_days:'Poser des jours',wdates:'Dates travaillées',jobn:'Mission',wdd:'Jours travaillés',td:'Jours pris',tdates:'Dates prises',total:'TOTAL',addemp:'+ Nouveau salarié',back:'← Retour',edit:'Modifier',save:'Enregistrer',dlrtt:'⚠️ À poser avant le 31/12/2026',dlcp:'⚠️ À poser avant le 31/05/2027',hello:'Bonjour',nodata:'Aucune donnée',expcsv:'Export CSV',expprint:'Imprimer',allreq:'Toutes les demandes',mustpw:'Changez votre mot de passe temporaire.',chgpw:'Changer',name:'Nom',jobtitle:'Poste',entry:'Entrée',access:'Accès',sim_title:'🔮 Simulation — Que me restera-t-il ?',sim_label:'Choisir une date future',sim_cp_acq:'CP acquis',sim_cp_plan:'CP planifiés',sim_cp_left:'CP restants',sim_rtt_acq:'RTT acquis',sim_rtt_plan:'RTT planifiés',sim_rtt_left:'RTT restants',past:'Historique passé',fut:'Congés planifiés'},
+  en:{lsub:'Leave & Absence Management',lemail:'Email address',lpw:'Password',lbtn:'Sign in',lerr:'Incorrect email or password.',logout:'Sign out',dashboard:'Dashboard',myleaves:'My Leaves',calendar:'Calendar',requests:'Requests',employees:'Employees',overview:'Overview',team:'Team',newreq:'New Request',cp:'Paid Leave (PL)',rtt:'RTT',recup:'Time off in lieu',history:'History',recup_tab:'Time off in lieu tracker',pending:'Pending',approved:'Approved',refused:'Refused',future:'Planned',approve:'Approve',refuse:'Refuse',profile:'Profile',taken:'Taken',remaining:'Remaining',acquired:'Accrued',add_worked:'+ Add worked days',take_days:'Take days',wdates:'Days worked',jobn:'Job',wdd:'Days worked',td:'Days taken',tdates:'Dates taken',total:'TOTAL',addemp:'+ New employee',back:'← Back',edit:'Edit',save:'Save',dlrtt:'⚠️ Must be taken before 31/12/2026',dlcp:'⚠️ Must be taken before 31/05/2027',hello:'Hello',nodata:'No data',expcsv:'Export CSV',expprint:'Print',allreq:'All Requests',mustpw:'Please change your temporary password.',chgpw:'Change',name:'Name',jobtitle:'Job title',entry:'Start date',access:'Access',sim_title:'🔮 Simulation — What will I have left?',sim_label:'Choose a future date',sim_cp_acq:'PL accrued',sim_cp_plan:'PL planned',sim_cp_left:'PL remaining',sim_rtt_acq:'RTT accrued',sim_rtt_plan:'RTT planned',sim_rtt_left:'RTT remaining',past:'Past history',fut:'Planned leave'}
+};
+const t=k=>T[LANG][k]||k;
+
+function setLang(l){
+  LANG=l;localStorage.setItem('holmes_lang',l);
+  document.querySelectorAll('.lbtn').forEach(b=>b.classList.toggle('active',b.textContent.trim()===l.toUpperCase()));
+  const tf=document.getElementById('tlf'),te=document.getElementById('tle');
+  if(tf){tf.classList.toggle('active',l==='fr');te.classList.toggle('active',l==='en');}
+  if(CURRENT_USER)renderApp();else updateLoginUI();
+}
+function updateLoginUI(){
+  document.getElementById('lsub').textContent=t('lsub');
+  document.getElementById('lemail-lbl').textContent=t('lemail');
+  document.getElementById('lpw-lbl').textContent=t('lpw');
+  document.getElementById('lbtn').textContent=t('lbtn');
+}
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+async function doLogin(){
+  const email=document.getElementById('lemail').value.trim().toLowerCase();
+  const pw=document.getElementById('lpw').value;
+  try {
+    const u = await db.getUserByEmail(email);
+    if(!u || u.pw !== pw){
+      const el=document.getElementById('lerr');el.style.display='block';el.textContent=t('lerr');return;
+    }
+    CURRENT_USER = u;
+    localStorage.setItem('holmes_uid', u.id);
+    await loadAllData();
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    renderApp();
+    if(u.must_pw) setTimeout(()=>openM('m-pw'),400);
+  } catch(e) {
+    notif('Erreur de connexion: '+e.message,'error');
+  }
+}
+
+async function doLogout(){
+  CURRENT_USER=null;USERS=[];REQUESTS=[];RECUP={};
+  localStorage.removeItem('holmes_uid');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('lemail').value='';
+  document.getElementById('lpw').value='';
+  document.getElementById('lerr').style.display='none';
+}
+
+async function doChgPw(){
+  const n=document.getElementById('pw1').value,c=document.getElementById('pw2').value;
+  if(n.length<8){notif('Minimum 8 caractères','error');return;}
+  if(n!==c){notif('Les mots de passe ne correspondent pas','error');return;}
+  await db.updateUser(CURRENT_USER.id,{pw:n,must_pw:false});
+  CURRENT_USER.pw=n;CURRENT_USER.must_pw=false;
+  closeM('m-pw');notif('Mot de passe changé ✓','success');renderPage(AP);
+}
+
+async function loadAllData(){
+  [USERS, REQUESTS] = await Promise.all([db.getUsers(), db.getRequests()]);
+  // Load recup for all users
+  RECUP={};
+  await Promise.all(USERS.map(async u=>{
+    RECUP[u.id] = await db.getRecup(u.id);
+  }));
+}
+
+const isAdmin=()=>CURRENT_USER?.role==='admin';
+const isMgr=()=>['admin','manager'].includes(CURRENT_USER?.role);
+const isRO=()=>CURRENT_USER?.role==='readonly';
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function wdCount(s,e){
+  let c=0,d=new Date(s+'T12:00:00'),en=new Date(e+'T12:00:00');
+  while(d<=en){const dw=d.getDay();if(dw!==0&&dw!==6&&!HOLIDAYS.has(ymds(d)))c++;d.setDate(d.getDate()+1);}
+  return c;
+}
+function ymds(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${dd}`;}
+function isFuture(ds){return ds>TODAY;}
+function fd(s){if(!s)return'—';return new Date(s+'T12:00:00').toLocaleDateString(LANG==='fr'?'fr-FR':'en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtLong(d){return d.toLocaleDateString(LANG==='fr'?'fr-FR':'en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function tb(type){const m={PL:['bpl','CP'],RTT:['brtt','RTT'],SL:['bsl','Maladie'],RECUP:['brecup','Récup'],CSS:['bcss','Sans solde'],MAT:['bother','Mat.'],FAM:['bother','Famille'],OTHER:['bother','Autre']};const[c,l]=m[type]||['bother',type];return`<span class="badge ${c}">${l}</span>`;}
+function sb(s){const m={pending:['bpend',t('pending')],approved:['bappr',t('approved')],refused:['bref',t('refused')]};const[c,l]=m[s]||['bother',s];return`<span class="badge ${c}">${l}</span>`;}
+function rb(r){const m={admin:'🔑 Admin',manager:'✅ Validateur',employee:'👤 Salarié',readonly:'👁 Lecture'};return`<small>${m[r]||r}</small>`;}
+function card(lb,val,col,sub,dead){return`<div class="card"><div class="clabel">${lb}</div><div class="cval ${col}">${val}</div><div class="csub">${sub}</div>${dead?`<div class="cdead">${dead}</div>`:''}</div>`;}
+function swt(el,id){el.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');let s=el.closest('.tabs').nextElementSibling;while(s&&s.classList.contains('tcontent')){s.classList.remove('active');s=s.nextElementSibling;}document.getElementById(id).classList.add('active');}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+function notif(msg,type='info'){const el=document.getElementById('notif');el.textContent=msg;el.className=`notif ${type} show`;setTimeout(()=>el.classList.remove('show'),3500);}
+
+// Balance helpers
+// ── DYNAMIC BALANCE CALCULATION ──
+// Base = payslip of May 31, 2026 (cp_base / rtt_base in Supabase)
+// Auto-accumulates: CP +2.08j/month, RTT +0.83j/month from June 1
+// Only deducts NEW requests created AND taken AFTER base date
+// Historical requests (in CALMAP) are already included in the payslip base
+
+const BASE_DATE = '2026-05-31';
+
+function calcCPSinceBase(baseDate, targetDate) {
+  const b = new Date(baseDate+'T12:00:00');
+  const t = new Date(targetDate+'T12:00:00');
+  if(t <= b) return 0;
+  let months = (t.getFullYear()-b.getFullYear())*12 + (t.getMonth()-b.getMonth());
+  if(t.getDate() < b.getDate()) months--;
+  months = Math.max(0, months);
+  const dom = new Date(t.getFullYear(), t.getMonth()+1, 0).getDate();
+  const prorata = (t.getDate()/dom) * 2.08;
+  return Math.round((months * 2.08 + prorata) * 100) / 100;
+}
+
+function calcRTTSinceBase(baseDate, targetDate) {
+  const b = new Date(baseDate+'T12:00:00');
+  const t = new Date(targetDate+'T12:00:00');
+  if(t <= b) return 0;
+  let months = (t.getFullYear()-b.getFullYear())*12 + (t.getMonth()-b.getMonth());
+  if(t.getDate() < b.getDate()) months--;
+  months = Math.max(0, months);
+  const dom = new Date(t.getFullYear(), t.getMonth()+1, 0).getDate();
+  const prorata = (t.getDate()/dom) * 0.83;
+  return Math.round((months * 0.83 + prorata) * 100) / 100;
+}
+
+function todayStr() { return ymds(new Date()); }
+
+const cpCurrent = uid => {
+  const u = USERS.find(x => x.id === uid);
+  if(!u) return 0;
+  const today = todayStr();
+  const base = u.cp_base || 0;
+  // CP accumulated from June 1 onwards
+  const accrued = calcCPSinceBase(BASE_DATE, today);
+  // Only deduct NEW requests (created after BASE_DATE) that are already past
+  const taken = REQUESTS.filter(r =>
+    r.user_id === uid &&
+    r.type === 'PL' &&
+    r.status === 'approved' &&
+    r.created_at > BASE_DATE &&  // created after the payslip base date
+    r.end_date <= today            // already taken (past)
+  ).reduce((s,r) => s + r.days, 0);
+  return Math.max(0, Math.round((base + accrued - taken) * 100) / 100);
+};
+
+const rttCurrent = uid => {
+  const u = USERS.find(x => x.id === uid);
+  if(!u) return 0;
+  const today = todayStr();
+  const base = u.rtt_base || 0;
+  const accrued = calcRTTSinceBase(BASE_DATE, today);
+  const taken = REQUESTS.filter(r =>
+    r.user_id === uid &&
+    r.type === 'RTT' &&
+    r.status === 'approved' &&
+    r.created_at > BASE_DATE &&
+    r.end_date <= today
+  ).reduce((s,r) => s + r.days, 0);
+  return Math.max(0, Math.round((base + accrued - taken) * 100) / 100);
+};
+const cpFut=uid=>REQUESTS.filter(r=>r.user_id===uid&&r.type==='PL'&&r.status==='approved'&&r.start_date>TODAY).reduce((s,r)=>s+r.days,0);
+const rttFut=uid=>REQUESTS.filter(r=>r.user_id===uid&&r.type==='RTT'&&r.status==='approved'&&r.start_date>TODAY).reduce((s,r)=>s+r.days,0);
+const cpTakenPast=uid=>ABSDAYS.filter(e=>e.u===uid&&e.t==='PL'&&e.d<=TODAY).length;
+const rttTakenPast=uid=>ABSDAYS.filter(e=>e.u===uid&&e.t==='RTT'&&e.d<=TODAY).length;
+const recupLeft=uid=>(RECUP[uid]||[]).reduce((s,r)=>s+Number(r.remaining||0),0);
+const recupTaken=uid=>(RECUP[uid]||[]).reduce((s,r)=>s+Number(r.taken||0),0);
+
+function calcCPAcq(entry,target){
+  const e=new Date(entry+'T12:00:00'),tg=new Date(target+'T12:00:00');if(tg<e)return 0;
+  // If entry is on the 1st of the month, count it as a full month
+  // Otherwise prorate by working days
+  let joFirst,joMonth;
+  if(e.getDate()===1){
+    joFirst=1;joMonth=1; // full month
+  } else {
+    const fme=new Date(e.getFullYear(),e.getMonth()+1,0);
+    joFirst=0;joMonth=0;
+    let d=new Date(e.getFullYear(),e.getMonth(),1);
+    while(d<=fme){if(d.getDay()!==0&&d.getDay()!==6){joMonth++;if(d>=e)joFirst++;}d.setDate(d.getDate()+1);}
+  }
+  const prorata=joMonth>0?(joFirst/joMonth)*2.08:0;
+  let full=(tg.getFullYear()-e.getFullYear())*12+(tg.getMonth()-e.getMonth());
+  if(tg.getDate()<e.getDate())full--;full=Math.max(0,full);
+  return Math.round((prorata+full*2.08)*100)/100;
+}
+function calcRTTAcq(entry,target){
+  const rs=entry>'2026-01-01'?entry:'2026-01-01';
+  const e=new Date(rs+'T12:00:00'),tg=new Date(target+'T12:00:00');if(tg<e)return 0;
+  let months=(tg.getFullYear()-e.getFullYear())*12+(tg.getMonth()-e.getMonth());
+  if(tg.getDate()<e.getDate())months--;months=Math.max(0,months);
+  const dom=new Date(e.getFullYear(),e.getMonth()+1,0).getDate(),dl=dom-e.getDate()+1;
+  return Math.round(((dl/dom)*0.83+months*0.83)*100)/100;
+}
+function simulate(uid,target){
+  const u=USERS.find(x=>x.id===uid);if(!u||target<=TODAY)return null;
+  const cpExtra=calcCPAcq(u.entry,target)-calcCPAcq(u.entry,TODAY);
+  const rttExtra=calcRTTAcq(u.entry,target)-calcRTTAcq(u.entry,TODAY);
+  const cpPlan=REQUESTS.filter(r=>r.user_id===uid&&r.type==='PL'&&r.status==='approved'&&r.start_date>TODAY&&r.start_date<=target).reduce((s,r)=>s+r.days,0);
+  const rttPlan=REQUESTS.filter(r=>r.user_id===uid&&r.type==='RTT'&&r.status==='approved'&&r.start_date>TODAY&&r.start_date<=target).reduce((s,r)=>s+r.days,0);
+  return{cpExtra:Math.round(cpExtra*100)/100,rttExtra:Math.round(rttExtra*100)/100,cpPlan,rttPlan,cpAtDate:Math.round((u.cp_base+cpExtra-cpPlan)*100)/100,rttAtDate:Math.round((u.rtt_base+rttExtra-rttPlan)*100)/100,cpAcq:Math.round(calcCPAcq(u.entry,target)*100)/100,rttAcq:Math.round(calcRTTAcq(u.entry,target)*100)/100};
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+let AP='dashboard';
+function renderApp(){
+  document.getElementById('tname').textContent=CURRENT_USER.name;
+  document.getElementById('tbtnout').textContent=t('logout');
+  document.getElementById('tlf').classList.toggle('active',LANG==='fr');
+  document.getElementById('tle').classList.toggle('active',LANG==='en');
+  renderSidebar();renderPage(AP);
+}
+function renderSidebar(){
+  let h='';
+  h+=`<div class="nlabel">${t('overview')}</div>`;
+  h+=ni('dashboard','🏠',t('dashboard'));
+  if(!isRO())h+=ni('myleaves','📋',t('myleaves'));
+  h+=ni('calendar','📅',t('calendar'));
+  if(isMgr()){h+=`<div class="nlabel" style="margin-top:8px">${t('team')}</div>`;h+=ni('allreq','📨',t('requests'));h+=ni('employees','👥',t('employees'));if(isAdmin())h+=ni('admin','⚙️','Gestion admin');}
+  else if(isRO()){h+=`<div class="nlabel" style="margin-top:8px">${t('team')}</div>`;h+=ni('employees','👥',t('employees'));}
+  document.getElementById('sidebar').innerHTML=h;
+}
+function ni(p,ic,lb){const a=AP===p||(p==='employees'&&AP.startsWith('profile-'));return`<div class="nitem ${a?'active':''}" onclick="goTo('${p}')"><span style="width:18px;text-align:center">${ic}</span>${lb}</div>`;}
+function goTo(p){AP=p;renderSidebar();renderPage(p);}
+function renderPage(p){
+  let h='';
+  if(p==='dashboard')h=pgDash();
+  else if(p==='myleaves')h=pgMyLeaves();
+  else if(p==='calendar')h=pgCal();
+  else if(p==='allreq')h=pgAllReq();
+  else if(p==='employees')h=pgEmps();
+  else if(p.startsWith('profile-'))h=pgProfile(p.replace('profile-',''));
+  else if(p==='admin')h=pgAdmin();
+  document.getElementById('content').innerHTML=h;
+}
+
+// ═══════════════════════════════════════
+// PAGES
+// ═══════════════════════════════════════
+function simBox(uid){
+  const cpN=cpCurrent(uid),rttN=rttCurrent(uid);
+  let h=`<div class="simbox"><div class="simtitle">${t('sim_title')}</div>`;
+  h+=`<div class="simrow"><label>${t('sim_label')} :</label><input type="date" id="sid-${uid}" min="${TODAY}" onchange="runSim('${uid}')"></div>`;
+  h+=`<div id="sr-${uid}"><div class="simresults">`;
+  h+=`<div class="simcard"><div class="sl">${t('cp')}</div><div class="sv pos">${cpN.toFixed(2)} j</div><div class="sd">Solde actuel · Planifié: ${cpFut(uid)} j</div></div>`;
+  h+=`<div class="simcard"><div class="sl">${t('rtt')}</div><div class="sv pos">${rttN.toFixed(2)} j</div><div class="sd">Solde actuel · Planifié: ${rttFut(uid)} j</div></div>`;
+  h+=`<div class="simcard"><div class="sl">${t('recup')}</div><div class="sv neu">${recupLeft(uid).toFixed(1)} j</div><div class="sd">Jours restants</div></div>`;
+  h+=`</div></div></div>`;return h;
+}
+function runSim(uid){
+  const inp=document.getElementById('sid-'+uid),target=inp?.value,el=document.getElementById('sr-'+uid);if(!el)return;
+  if(!target||target<=TODAY){el.innerHTML=`<div style="font-size:12px;color:var(--muted);padding:8px 0">Choisissez une date dans le futur</div>`;return;}
+  const s=simulate(uid,target);if(!s)return;
+  let h=`<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Au <strong>${fd(target)}</strong> :</div>`;
+  h+=`<div class="simresults"><div class="simcard"><div class="sl">${t('sim_cp_acq')}</div><div class="sv neu">${s.cpAcq.toFixed(2)} j</div><div class="sd">+${s.cpExtra.toFixed(2)} j depuis auj.</div></div><div class="simcard"><div class="sl">${t('sim_cp_plan')}</div><div class="sv neu">${s.cpPlan} j</div><div class="sd">CP planifiés</div></div><div class="simcard"><div class="sl">${t('sim_cp_left')}</div><div class="sv ${s.cpAtDate>=0?'pos':'neg'}">${s.cpAtDate.toFixed(2)} j</div><div class="sd">${s.cpAtDate<0?'⚠️ Insuffisant':'Solde restant'}</div></div></div>`;
+  h+=`<div class="simresults" style="margin-top:10px"><div class="simcard"><div class="sl">${t('sim_rtt_acq')}</div><div class="sv neu">${s.rttAcq.toFixed(2)} j</div><div class="sd">+${s.rttExtra.toFixed(2)} j depuis auj.</div></div><div class="simcard"><div class="sl">${t('sim_rtt_plan')}</div><div class="sv neu">${s.rttPlan} j</div><div class="sd">RTT planifiés</div></div><div class="simcard"><div class="sl">${t('sim_rtt_left')}</div><div class="sv ${s.rttAtDate>=0?'pos':'neg'}">${s.rttAtDate.toFixed(2)} j</div><div class="sd">${s.rttAtDate<0?'⚠️ Insuffisant':'Solde restant'}</div></div></div>`;
+  el.innerHTML=h;
+}
+
+function pgDash(){
+  const u=CURRENT_USER,pend=REQUESTS.filter(r=>r.status==='pending');
+  const cpN=cpCurrent(u.id),rttN=rttCurrent(u.id),rl=recupLeft(u.id);
+  let h=`<div class="ptitle">${t('hello')}, ${u.name.split(' ')[0]} 👋</div><div class="psub">${fmtLong(new Date())}</div>`;
+  if(u.must_pw)h+=`<div class="pwbanner"><span>🔐 ${t('mustpw')}</span><button class="btn btn-gold btn-sm" onclick="openM('m-pw')">${t('chgpw')}</button></div>`;
+  if(!isRO()){
+    h+=`<div class="cards">`;
+    h+=card(t('cp'),cpN.toFixed(2),'gold',`Solde au ${fd(todayStr())} · Planifié: ${cpFut(u.id)} j`,t('dlcp'));
+    h+=card(t('rtt'),rttN.toFixed(2),'sage',`Solde au ${fd(todayStr())} · Planifié: ${rttFut(u.id)} j`,t('dlrtt'));
+    h+=`</div>`;
+    h+=`<div class="cards">`;
+    h+=card(t('recup'),rl.toFixed(1),'rust',`${t('taken')}: ${recupTaken(u.id)} j`,'');
+    if(isMgr())h+=card(LANG==='fr'?'En attente':'Pending',pend.length,'blue',LANG==='fr'?'à valider':'to validate','');
+    h+=`</div>`;
+    h+=simBox(u.id);
+    const myR=REQUESTS.filter(r=>r.user_id===u.id);
+    h+=`<div class="twrap"><div class="thead2"><span class="ttitle">${LANG==='fr'?'Mes dernières demandes':'My recent requests'}</span><button class="btn btn-dark btn-sm" onclick="openM('m-req')">${t('newreq')}</button></div>`;
+    const last=[...myR].slice(0,5);
+    if(!last.length)h+=`<div class="empty">${t('nodata')}</div>`;
+    else{h+=`<table><thead><tr><th>Type</th><th>Période</th><th>Jours</th><th>Statut</th></tr></thead><tbody>`;last.forEach(r=>h+=`<tr class="${isFuture(r.start_date)?'row-future':''}"><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${isFuture(r.start_date)?`<span class="badge bfut">${t('future')}</span>`:sb(r.status)}</td></tr>`);h+=`</tbody></table>`;}
+    h+=`</div>`;
+  }
+  if(isMgr()&&pend.length){
+    h+=`<div class="stitle">⏳ ${LANG==='fr'?'Congés en attente':'Pending leave'} (${pend.length})</div><div class="twrap"><table><thead><tr><th>${t('name')}</th><th>Type</th><th>Période</th><th>Jours</th><th></th></tr></thead><tbody>`;
+    pend.forEach(r=>{const e=USERS.find(x=>x.id===r.user_id);h+=`<tr><td>${e?.name||'—'}</td><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td><button class="btn-appr" onclick="appr('${r.id}')">${t('approve')}</button> <button class="btn-ref" onclick="ref('${r.id}')">${t('refuse')}</button></td></tr>`;});
+    h+=`</tbody></table></div>`;
+  }
+  // Pending recup entries
+  const pendingRecup=[];
+  Object.entries(RECUP).forEach(([uid,entries])=>{
+    entries.filter(r=>r.status==='pending').forEach(r=>{
+      const emp=USERS.find(x=>x.id===uid);
+      pendingRecup.push({...r,empName:emp?.name||uid,uid});
+    });
+  });
+  if(isMgr()&&pendingRecup.length){
+    h+=`<div class="stitle">⏳ Récupération en attente de validation (${pendingRecup.length})</div><div class="twrap"><table><thead><tr><th>Salarié</th><th>Dates travaillées</th><th>Mission</th><th>Jours</th><th></th></tr></thead><tbody>`;
+    pendingRecup.forEach(r=>{h+=`<tr><td>${r.empName}</td><td>${r.dates}</td><td>${r.job}</td><td>${r.worked}</td><td><button class="btn-appr" onclick="approveRecup('${r.uid}',${r.id})">✓ Valider</button> <button class="btn-ref" onclick="refuseRecup('${r.uid}',${r.id})">✕</button></td></tr>`;});
+    h+=`</tbody></table></div>`;}
+  return h;
+}
+
+function histTbl(uid,type){
+  const past=REQUESTS.filter(r=>r.user_id===uid&&r.type===type&&!isFuture(r.start_date));
+  const fut=REQUESTS.filter(r=>r.user_id===uid&&r.type===type&&isFuture(r.start_date));
+  const isOwn = uid === CURRENT_USER.id;
+  const canEdit = isAdmin();
+  let h='';
+  if(fut.length){
+    h+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--muted)">🕐 ${t('fut')}</div>`;
+    h+=`<div class="twrap"><table><thead><tr><th>Période</th><th>Jours</th><th>Statut</th><th></th></tr></thead><tbody>`;
+    fut.forEach(r=>{
+      h+=`<tr><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${sb(r.status)}</td><td>`;
+      if(isOwn && r.status==='approved') h+=`<button class="btn btn-sm btn-ol" onclick="openCancelReq('${r.id}','${r.type}','${r.start_date}','${r.end_date}',${r.days})">Demander annulation</button>`;
+      if(canEdit) h+=` <button class="btn btn-sm btn-ol" onclick="openEditReq('${r.id}')">✏️</button>`;
+      if(canEdit) h+=` <button class="btn-ref btn-sm" onclick="adminDeleteReq('${r.id}','${r.user_id}','${r.type}',${r.days},'${r.status}','${r.start_date}')">✕</button>`;
+      h+=`</td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }
+  if(!past.length&&!fut.length)return`<div class="empty">${t('nodata')}</div>`;
+  if(past.length){
+    h+=`<div class="twrap"><table><thead><tr><th>Période</th><th>Jours</th><th>Statut</th><th></th></tr></thead><tbody>`;
+    [...past].forEach(r=>{
+      h+=`<tr><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${sb(r.status)}</td><td>`;
+      if(canEdit) h+=`<button class="btn btn-sm btn-ol" onclick="openEditReq('${r.id}')">✏️</button> <button class="btn-ref btn-sm" onclick="adminDeleteReq('${r.id}','${r.user_id}','${r.type}',${r.days},'${r.status}','${r.start_date}')">✕</button>`;
+      h+=`</td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }
+  return h;
+}
+
+function recupTbl(uid,ro){
+  const rc=RECUP[uid]||[];
+  const totW=rc.reduce((s,r)=>s+Number(r.worked||0),0),totT=rc.reduce((s,r)=>s+Number(r.taken||0),0),totR=rc.reduce((s,r)=>s+Number(r.remaining||0),0);
+  let h=`<div class="twrap"><div class="thead2"><span class="ttitle">🔄 ${t('recup_tab')}</span>`;
+  if(!ro)h+=`<button class="btn btn-ol btn-sm" onclick="openRAdd('${uid}')">${t('add_worked')}</button>`;
+  h+=`</div><table><thead><tr><th>${t('wdates')}</th><th>${t('jobn')}</th><th>${t('wdd')}</th><th>${t('td')}</th><th>${t('tdates')}</th><th>${t('remaining')}</th>`;if(!ro)h+=`<th></th>`;h+=`</tr></thead><tbody>`;
+  if(!rc.length)h+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">${t('nodata')}</td></tr>`;
+  else rc.forEach((r,i)=>{
+    const isPending=r.status==='pending';
+    const rowStyle=isPending?'background:#FFF8E7':'';
+    h+=`<tr style="${rowStyle}"><td>${r.dates}${isPending?' <span class="badge bpend">En attente</span>':''}</td><td>${r.job}</td><td>${r.worked}</td><td>${r.taken}</td><td>${r.taken_dates||'—'}</td><td><strong>${isPending?'—':r.remaining}</strong></td>`;
+    if(!ro){
+      if(isPending&&isMgr()){
+        h+=`<td><button class="btn-appr btn-sm" onclick="approveRecup('${uid}',${r.id})">✓</button> <button class="btn-ref btn-sm" onclick="refuseRecup('${uid}',${r.id})">✕</button></td>`;
+      } else if(!isPending&&Number(r.remaining)>0){
+        h+=`<td><button class="btn btn-sm btn-ol" onclick="openRTake('${uid}',${i})">${t('take_days')}</button></td>`;
+      } else {
+        h+=`<td></td>`;
+      }
+    }
+    h+=`</tr>`;
+  });
+  h+=`<tr class="recup-foot"><td colspan="2"><strong>${t('total')}</strong></td><td><strong>${totW}</strong></td><td><strong>${totT}</strong></td><td></td><td><strong>${totR}</strong></td>`;if(!ro)h+=`<td></td>`;h+=`</tr></tbody></table></div>`;return h;
+}
+
+function pgMyLeaves(){
+  const u=CURRENT_USER,myR=REQUESTS.filter(r=>r.user_id===u.id);
+  const cpN=cpCurrent(u.id),rttN=rttCurrent(u.id),rl=recupLeft(u.id);
+  let h=`<div class="ptitle">${t('myleaves')}</div><div class="psub">${LANG==='fr'?'Vos soldes et historique':'Your balances and history'}</div>`;
+  h+=`<div class="cards">`;
+  h+=card(t('cp'),cpN.toFixed(2),'gold',`Solde au ${fd(todayStr())} · Planifié: ${cpFut(u.id)} j`,t('dlcp'));
+  h+=card(t('rtt'),rttN.toFixed(2),'sage',`Solde au ${fd(todayStr())} · Planifié: ${rttFut(u.id)} j`,t('dlrtt'));
+  h+=card(t('recup'),rl.toFixed(1),'rust',`${t('taken')}: ${recupTaken(u.id)} j`,'');
+  h+=`</div>`;
+  h+=simBox(u.id);
+  h+=`<div class="tabs"><div class="tab active" onclick="swt(this,'ml-cp')">🌴 ${t('cp')}</div><div class="tab" onclick="swt(this,'ml-rtt')">📆 RTT</div><div class="tab" onclick="swt(this,'ml-rec')">🔄 ${t('recup_tab')}</div><div class="tab" onclick="swt(this,'ml-all')">📋 ${t('history')}</div></div>`;
+  h+=`<div class="tcontent active" id="ml-cp"><div class="alert alert-w">${t('dlcp')} — Solde : <strong>${cpN.toFixed(2)} j</strong> · Planifié : <strong>${cpFut(u.id)} j</strong></div>${histTbl(u.id,'PL')}<div style="text-align:right;margin-top:10px"><button class="btn btn-dark btn-sm" onclick="openM('m-req');setTimeout(()=>document.getElementById('rtype').value='PL',50)">${t('newreq')} CP</button></div></div>`;
+  h+=`<div class="tcontent" id="ml-rtt"><div class="alert alert-w">${t('dlrtt')} — Solde : <strong>${rttN.toFixed(2)} j</strong> · Planifié : <strong>${rttFut(u.id)} j</strong></div>${histTbl(u.id,'RTT')}<div style="text-align:right;margin-top:10px"><button class="btn btn-dark btn-sm" onclick="openM('m-req');setTimeout(()=>document.getElementById('rtype').value='RTT',50)">${t('newreq')} RTT</button></div></div>`;
+  h+=`<div class="tcontent" id="ml-rec">${recupTbl(u.id,false)}</div>`;
+  h+=`<div class="tcontent" id="ml-all"><div style="text-align:right;margin-bottom:10px"><button class="btn btn-dark btn-sm" onclick="openM('m-req')">${t('newreq')}</button></div>`;
+  const fut=myR.filter(r=>isFuture(r.start_date)),past=myR.filter(r=>!isFuture(r.start_date));
+  if(fut.length){h+=`<div class="stitle">🕐 ${t('fut')}</div><div class="twrap"><table><thead><tr><th>Type</th><th>Période</th><th>Jours</th></tr></thead><tbody>`;fut.forEach(r=>h+=`<tr><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td></tr>`);h+=`</tbody></table></div>`;}
+  h+=`<div class="stitle">✅ ${t('past')}</div>`;
+  if(!past.length)h+=`<div class="empty">${t('nodata')}</div>`;
+  else{h+=`<div class="twrap"><table><thead><tr><th>Type</th><th>Période</th><th>Jours</th><th>Statut</th></tr></thead><tbody>`;past.forEach(r=>h+=`<tr><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${sb(r.status)}</td></tr>`);h+=`</tbody></table></div>`;}
+  h+=`</div>`;return h;
+}
+
+function pgCal(){
+  const y=CAL_YEAR,m=CAL_MONTH;
+  const MF=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const ME=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DF=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],DE=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const mn=LANG==='fr'?MF:ME,dn=LANG==='fr'?DF:DE;
+  let h=`<div class="ptitle">${t('calendar')}</div><div class="psub">${LANG==='fr'?'Absences de toute l\'équipe':'Team absences'}</div>`;
+  h+=`<div class="calwrap"><div class="calhead"><div class="calnav"><button onclick="calNav(-1)">‹</button><span class="calmonthlbl">${mn[m]} ${y}</span><button onclick="calNav(1)">›</button></div></div><div class="calgrid">`;
+  dn.forEach(d=>h+=`<div class="caldh">${d}</div>`);
+  const first=new Date(y,m,1),last=new Date(y,m+1,0),sdow=(first.getDay()+6)%7,todayD=new Date();
+  const TC={PL:'#E8D5A3',RTT:'#CCE5FF',SL:'#F8D7DA',RECUP:'#D4EDDA',OTHER:'#E2D9F3',CSS:'#EEE',MAT:'#FFE0F0',FAM:'#FFE8CC'};
+  const TL={PL:'CP',RTT:'RTT',SL:'MAL',RECUP:'REC',OTHER:'AUT',CSS:'CSS',MAT:'MAT',FAM:'FAM'};
+  const uname={margaux:'Margaux',ley:'Ley',bettina:'Bettina',nikolai:'Nikolaï',gabrielle:'Gabrielle',lea:'Lea',elsa:'Elsa'};
+  for(let i=0;i<sdow;i++){const d=new Date(y,m,-sdow+i+1);h+=`<div class="calcell om"><div class="caldate">${d.getDate()}</div></div>`;}
+  for(let day=1;day<=last.getDate();day++){
+    const d=new Date(y,m,day),dow=d.getDay(),isWE=dow===0||dow===6,isT=d.toDateString()===todayD.toDateString(),ds=ymds(d),isHol=HOLIDAYS.has(ds);
+    h+=`<div class="calcell ${isWE?'we':''} ${isHol?'ferie':''}"><div class="caldate">${isT?`<span class="today-num">${day}</span>`:day}${isHol?'<span style="font-size:8px;color:var(--gold);margin-left:2px">★</span>':''}</div>`;
+    if(!isWE&&!isHol){
+      // Build set of uid+type+date already shown via CALMAP
+      const calShown=new Set((CALMAP[ds]||[]).map(e=>e.uid+'|'+e.type));
+      // Show historical absences from CALMAP
+      (CALMAP[ds]||[]).forEach(e=>{
+        const fut=ds>TODAY;
+        const halfLabel=e.half==='pm'?' ½ PM':e.half==='am'?' ½ AM':'';
+        h+=`<div class="calpill" style="background:${TC[e.type]||'#eee'};opacity:${fut?0.65:1}">${uname[e.uid]||e.uid} · ${TL[e.type]||e.type}${halfLabel}${fut?' 🕐':''}</div>`;
+      });
+      // Show requests NOT already in CALMAP (new requests added after base date)
+      REQUESTS.filter(r=>{
+        const key=r.user_id+'|'+r.type;
+        return (r.status==='approved'||r.status==='pending')
+          && r.start_date<=ds && r.end_date>=ds
+          && r.created_at>TODAY
+          && !calShown.has(key);
+      }).forEach(r=>{
+        const e=USERS.find(x=>x.id===r.user_id);if(!e)return;
+        const isPend=r.status==='pending';
+        const hl=r.days===0.5?(r.comment&&r.comment.includes('matin')?' ½ AM':' ½ PM'):'';
+        h+=`<div class="calpill" style="background:${TC[r.type]||'#eee'};opacity:.65;border:1px dashed #999">${e.name.split(' ')[0]} · ${TL[r.type]||r.type}${hl} ${isPend?'⏳':'🕐'}</div>`;
+      });
+    }
+    h+=`</div>`;
+  }
+  const edow=(last.getDay()+6)%7;if(edow<6)for(let i=1;i<=6-edow;i++)h+=`<div class="calcell om"><div class="caldate">${i}</div></div>`;
+  h+=`</div>`;
+  const leg=[['#E8D5A3','CP'],['#CCE5FF','RTT'],['#F8D7DA','Maladie'],['#D4EDDA','Récup'],['#FFF8E7','Férié ★']];
+  h+=`<div class="calleg">`;leg.forEach(([c,l])=>h+=`<div class="legitem"><div class="legdot" style="background:${c};border:${c==='#FFF8E7'?'1px solid #ddd':'none'}"></div>${l}</div>`);h+=`<div class="legitem"><span style="opacity:.6">🕐</span> ${t('future')}</div></div></div>`;
+  return h;
+}
+function calNav(d){CAL_MONTH+=d;if(CAL_MONTH>11){CAL_MONTH=0;CAL_YEAR++;}if(CAL_MONTH<0){CAL_MONTH=11;CAL_YEAR--;}renderPage('calendar');}
+
+function pgAllReq(){
+  const pend=REQUESTS.filter(r=>r.status==='pending'),done=[...REQUESTS.filter(r=>r.status!=='pending')];
+  let h=`<div class="ptitle">${t('allreq')}</div><div class="psub">${LANG==='fr'?'Gérer toutes les demandes':'Manage all requests'}</div>`;
+  if(pend.length){h+=`<div class="stitle">⏳ ${LANG==='fr'?'En attente':'Pending'} (${pend.length})</div><div class="twrap"><table><thead><tr><th>${t('name')}</th><th>Type</th><th>Période</th><th>Jours</th><th>Commentaire</th><th></th></tr></thead><tbody>`;
+    pend.forEach(r=>{const e=USERS.find(x=>x.id===r.user_id);h+=`<tr><td>${e?.name||'—'}</td><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${r.comment||'—'}</td><td><button class="btn-appr" onclick="appr('${r.id}')">${t('approve')}</button> <button class="btn-ref" onclick="ref('${r.id}')">${t('refuse')}</button></td></tr>`;});h+=`</tbody></table></div>`;}
+  h+=`<div class="stitle">${LANG==='fr'?'Historique':'History'}</div><div class="twrap"><table><thead><tr><th>${t('name')}</th><th>Type</th><th>Période</th><th>Jours</th><th>Statut</th></tr></thead><tbody>`;
+  done.forEach(r=>{const e=USERS.find(x=>x.id===r.user_id),fut=isFuture(r.start_date);h+=`<tr class="${fut?'row-future':''}"><td>${e?.name||'—'}</td><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${fut?`<span class="badge bfut">${t('future')}</span>`:sb(r.status)}</td></tr>`;});
+  h+=`</tbody></table></div><div style="display:flex;gap:8px"><button class="btn btn-ol btn-sm" onclick="expCSV()">📊 ${t('expcsv')}</button><button class="btn btn-ol btn-sm" onclick="window.print()">🖨️ ${t('expprint')}</button></div>`;return h;
+}
+
+function pgEmps(){
+  let h=`<div class="ptitle">${t('employees')}</div><div class="psub">Holmes Production</div>`;
+  if(isAdmin())h+=`<div style="text-align:right;margin-bottom:14px"><button class="btn btn-dark btn-sm" onclick="openM('m-emp')">${t('addemp')}</button></div>`;
+  const emps=USERS.filter(x=>x.id!=='admin');
+  // Admin/Manager/Laura can see all details, employees see limited view
+  const canSeeAll = isMgr() || CURRENT_USER.id==='laura';
+  if(canSeeAll){
+    h+=`<div class="twrap"><table><thead><tr><th>${t('name')}</th><th>${t('jobtitle')}</th><th>${t('entry')}</th><th>CP</th><th>RTT</th><th>Récup</th><th>${t('access')}</th><th></th></tr></thead><tbody>`;
+    emps.forEach(u=>{h+=`<tr><td><div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--dark);flex-shrink:0">${u.name[0]}</div>${u.name}</div></td><td>${u.job||'—'}</td><td>${fd(u.entry)}</td><td><strong>${cpCurrent(u.id).toFixed(2)}</strong></td><td><strong>${rttCurrent(u.id).toFixed(2)}</strong></td><td><strong>${recupLeft(u.id).toFixed(1)}</strong></td><td>${rb(u.role)}</td><td><button class="btn btn-ol btn-sm" onclick="goTo('profile-${u.id}')">${t('profile')}</button></td></tr>`;});
+    h+=`</tbody></table></div>`;
+  } else {
+    // Simple employees: only see names and job titles, no balances, no profile links
+    h+=`<div class="twrap"><table><thead><tr><th>${t('name')}</th><th>${t('jobtitle')}</th></tr></thead><tbody>`;
+    emps.forEach(u=>{h+=`<tr><td><div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--dark);flex-shrink:0">${u.name[0]}</div>${u.name}</div></td><td>${u.job||'—'}</td></tr>`;});
+    h+=`</tbody></table></div>`;
+  }
+  return h;
+}
+
+function pgProfile(uid){
+  const u=USERS.find(x=>x.id===uid);if(!u)return'<p>Introuvable</p>';
+  // Only admin, manager, laura can see other profiles
+  const canView = isMgr() || CURRENT_USER.id==='laura' || CURRENT_USER.id===uid;
+  if(!canView) return`<div class="empty">⛔ Vous n'avez pas accès à ce profil.</div>`;
+  const myR=REQUESTS.filter(r=>r.user_id===uid),canEdit=isAdmin();
+  const cpN=cpCurrent(uid),rttN=rttCurrent(uid),rl=recupLeft(uid);
+  let h=`<button class="btn btn-ol btn-sm" style="margin-bottom:14px" onclick="goTo('employees')">← ${t('back')}</button>`;
+  h+=`<div class="phead"><div class="pavatar">${u.name[0]}</div><div><div class="pname">${u.name}</div><div class="pmeta">${u.job||''}</div><div class="pmeta">${LANG==='fr'?'Entrée :':'Start:'} ${fd(u.entry)} · ${rb(u.role)}</div></div></div>`;
+  h+=`<div class="cards">`;
+  h+=card(t('cp'),cpN.toFixed(2),'gold',`Solde au ${fd(todayStr())} · Planifié: ${cpFut(uid)} j`,t('dlcp'));
+  h+=card(t('rtt'),rttN.toFixed(2),'sage',`Solde au ${fd(todayStr())} · Planifié: ${rttFut(uid)} j`,t('dlrtt'));
+  h+=card(t('recup'),rl.toFixed(1),'rust',`${t('taken')}: ${recupTaken(uid)} j`,'');
+  h+=`</div>`;
+  h+=simBox(uid);
+  h+=`<div class="tabs"><div class="tab active" onclick="swt(this,'pp-cp')">🌴 CP</div><div class="tab" onclick="swt(this,'pp-rtt')">📆 RTT</div><div class="tab" onclick="swt(this,'pp-rec')">🔄 Récupération</div><div class="tab" onclick="swt(this,'pp-all')">📋 Tout l'historique</div>`;
+  if(canEdit)h+=`<div class="tab" onclick="swt(this,'pp-ed')">✏️ ${t('edit')}</div>`;h+=`</div>`;
+  h+=`<div class="tcontent active" id="pp-cp"><div class="alert alert-w">${t('dlcp')} — Solde : <strong>${cpN.toFixed(2)} j</strong> · Planifié : <strong>${cpFut(uid)} j</strong></div>${histTbl(uid,'PL')}</div>`;
+  h+=`<div class="tcontent" id="pp-rtt"><div class="alert alert-w">${t('dlrtt')} — Solde : <strong>${rttN.toFixed(2)} j</strong> · Planifié : <strong>${rttFut(uid)} j</strong></div>${histTbl(uid,'RTT')}</div>`;
+  h+=`<div class="tcontent" id="pp-rec">${recupTbl(uid,!canEdit)}</div>`;
+  h+=`<div class="tcontent" id="pp-all">`;
+  const fut=myR.filter(r=>isFuture(r.start_date)),past=myR.filter(r=>!isFuture(r.start_date));
+  if(fut.length){h+=`<div class="stitle">🕐 ${t('fut')}</div><div class="twrap"><table><thead><tr><th>Type</th><th>Période</th><th>Jours</th></tr></thead><tbody>`;fut.forEach(r=>h+=`<tr><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td></tr>`);h+=`</tbody></table></div>`;}
+  h+=`<div class="stitle">✅ ${t('past')}</div>`;
+  if(!past.length)h+=`<div class="empty">${t('nodata')}</div>`;
+  else{h+=`<div class="twrap"><table><thead><tr><th>Type</th><th>Période</th><th>Jours</th><th>Statut</th></tr></thead><tbody>`;past.forEach(r=>h+=`<tr><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${sb(r.status)}</td></tr>`);h+=`</tbody></table></div>`;}
+  h+=`</div>`;
+  if(canEdit){h+=`<div class="tcontent" id="pp-ed"><div class="twrap" style="padding:18px"><div class="frow"><div class="fg"><label>Solde CP (base)</label><input type="text" id="ed-cp" value="${u.cp_base}"></div><div class="fg"><label>Solde RTT (base)</label><input type="text" id="ed-rtt" value="${u.rtt_base}"></div></div><div class="fg"><label>Poste</label><input type="text" id="ed-job" value="${u.job||''}"></div><div class="fg"><label>Rôle</label><select id="ed-role"><option value="employee" ${u.role==='employee'?'selected':''}>Salarié</option><option value="manager" ${u.role==='manager'?'selected':''}>Validateur</option><option value="readonly" ${u.role==='readonly'?'selected':''}>Lecture seule</option></select></div><button class="btn btn-dark btn-sm" onclick="saveEd('${uid}')">${t('save')}</button></div></div>`;}
+  return h;
+}
+
+// ═══════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════
+async function sendRecupNotification(userName, dates, job, days) {
+  try {
+    await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+      from_name: userName,
+      leave_type: 'Jours de récupération à valider',
+      start_date: dates,
+      end_date: 'Mission: ' + job,
+      days: days,
+      comment: 'En attente de validation',
+      reply_to: 'akremer@hr4team.com',
+      to_email: 'margaux@holmesproduction.com',
+    }, EJS_KEY);
+    await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+      from_name: userName,
+      leave_type: 'Jours de récupération à valider',
+      start_date: dates,
+      end_date: 'Mission: ' + job,
+      days: days,
+      comment: 'En attente de validation',
+      reply_to: 'akremer@hr4team.com',
+      to_email: 'akremer@hr4team.com',
+    }, EJS_KEY);
+  } catch(e) { console.error('Email error:', e); }
+}
+
+async function sendLeaveNotification(userName, leaveType, startDate, endDate, days, comment) {
+  try {
+    const typeLabels = {PL:'Congés payés (CP)', RTT:'RTT', SL:'Congé maladie', RECUP:'Récupération', CSS:'Congé sans solde', MAT:'Maternité / Paternité', FAM:'Événement familial', OTHER:'Autre'};
+    const params = {
+      from_name: userName,
+      leave_type: typeLabels[leaveType] || leaveType,
+      start_date: startDate,
+      end_date: endDate,
+      days: days,
+      comment: comment || '—',
+      reply_to: 'akremer@hr4team.com',
+    };
+    // Send to Margaux
+    await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+      ...params,
+      to_email: 'margaux@holmesproduction.com',
+    }, EJS_KEY);
+    // Send copy to Aline
+    await emailjs.send(EJS_SERVICE, EJS_TEMPLATE, {
+      ...params,
+      to_email: 'akremer@hr4team.com',
+    }, EJS_KEY);
+    console.log('Email notifications sent!');
+  } catch(e) {
+    console.error('Email error:', e);
+  }
+}
+
+async function submitReq(){
+  const u=CURRENT_USER,type=document.getElementById('rtype').value;
+  const start=document.getElementById('rstart').value,end=document.getElementById('rend').value;
+  const comment=document.getElementById('rcomment').value;
+  const half=document.getElementById('rhalf')?.value||'full';
+  if(!start||!end){notif('Veuillez remplir les dates','error');return;}
+  if(start>end){notif('La date de fin doit être après le début','error');return;}
+  const now=ymds(new Date());
+  const days=half!=='full'?0.5:wdCount(start,end);
+  const halfLabel=half==='am'?' (matin)':half==='pm'?' (après-midi)':'';
+  const data={id:'r'+Date.now(),user_id:u.id,type,start_date:start,end_date:end,days,status:'pending',comment:comment+halfLabel,created_at:now};
+  try{
+    await db.createRequest(data);
+    REQUESTS.unshift(data);
+    closeM('m-req');
+    notif(LANG==='fr'?'Demande envoyée ✓ — Margaux sera notifiée':'Request sent ✓','success');
+    sendLeaveNotification(CURRENT_USER.name, type, start, end, days, comment+halfLabel);
+    renderPage(AP);
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+function updBalInfo(){
+  const u=CURRENT_USER,type=document.getElementById('rtype').value;
+  const s=document.getElementById('rstart').value,e=document.getElementById('rend').value;
+  const el=document.getElementById('rbalinfo');if(!el)return;
+  if(!s||!e||s>e){el.innerHTML='';return;}
+  const half=document.getElementById('rhalf')?.value||'full';
+  const d = half!=='full' ? 0.5 : wdCount(s,e);
+  let m=`<div class="alert alert-i">Cette demande : <strong>${d} jour(s)</strong>`;
+  if(type==='PL')m+=` — Solde CP disponible : <strong>${cpCurrent(u.id).toFixed(2)} j</strong>`;
+  if(type==='RTT')m+=` — Solde RTT disponible : <strong>${rttCurrent(u.id).toFixed(2)} j</strong>`;
+  m+=`</div>`;el.innerHTML=m;
+}
+
+async function appr(id){
+  const r=REQUESTS.find(x=>x.id===id);
+  await db.updateRequest(id,{status:'approved'});
+  r.status='approved';
+  if(r.created_at>TODAY){
+    const u=USERS.find(x=>x.id===r.user_id);
+    if(r.type==='PL'){u.cp_base=Math.max(0,+(u.cp_base-r.days).toFixed(2));await db.updateUser(u.id,{cp_base:u.cp_base});}
+    if(r.type==='RTT'){u.rtt_base=Math.max(0,+(u.rtt_base-r.days).toFixed(2));await db.updateUser(u.id,{rtt_base:u.rtt_base});}
+  }
+  notif('Demande approuvée ✓','success');renderPage(AP);
+}
+
+async function ref(id){
+  await db.updateRequest(id,{status:'refused'});
+  REQUESTS.find(x=>x.id===id).status='refused';
+  notif('Demande refusée','info');renderPage(AP);
+}
+
+let _ruid=null;
+function openRAdd(uid){_ruid=uid;['ra-dates','ra-job','ra-nb'].forEach(i=>document.getElementById(i).value='');openM('m-radd');}
+async function saveRAdd(){
+  const uid=_ruid,dates=document.getElementById('ra-dates').value,job=document.getElementById('ra-job').value;
+  const nb=parseFloat(document.getElementById('ra-nb').value)||0;
+  if(!dates||!job||!nb){notif('Remplissez tous les champs','error');return;}
+  const data={user_id:uid,dates,job,worked:nb,taken:0,taken_dates:'—',remaining:nb,status:'pending'};
+  try{
+    const res=await db.createRecup(data);
+    if(!RECUP[uid])RECUP[uid]=[];
+    RECUP[uid].push(res[0]||data);
+    // Send email to Margaux
+    const emp=USERS.find(x=>x.id===uid);
+    sendRecupNotification(emp?.name||uid, dates, job, nb);
+    closeM('m-radd');notif('Jours travaillés envoyés ✓ — Margaux sera notifiée','success');renderPage(AP);
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+function openRTake(uid,idx){
+  _ruid=uid;const r=(RECUP[uid]||[])[idx];
+  document.getElementById('rt-sub').textContent=`${r.dates} · Mission ${r.job} · Restant : ${r.remaining} j`;
+  document.getElementById('rt-uid').value=uid;document.getElementById('rt-idx').value=idx;
+  ['rt-dates','rt-nb'].forEach(i=>document.getElementById(i).value='');openM('m-rtake');
+}
+async function saveRTake(){
+  const uid=document.getElementById('rt-uid').value,idx=parseInt(document.getElementById('rt-idx').value);
+  const r=(RECUP[uid]||[])[idx];
+  const dates=document.getElementById('rt-dates').value,nb=parseFloat(document.getElementById('rt-nb').value)||0;
+  if(nb>Number(r.remaining)){notif('Pas assez de jours restants','error');return;}
+  const newTaken=+(Number(r.taken)+nb).toFixed(2),newRem=+(Number(r.remaining)-nb).toFixed(2);
+  const newDates=r.taken_dates==='—'?dates:r.taken_dates+', '+dates;
+  try{
+    await db.updateRecup(r.id,{taken:newTaken,remaining:newRem,taken_dates:newDates});
+    r.taken=newTaken;r.remaining=newRem;r.taken_dates=newDates;
+    closeM('m-rtake');notif('Jours de récup posés ✓','success');renderPage(AP);
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+async function saveEd(uid){
+  const u=USERS.find(x=>x.id===uid);
+  const cp=parseFloat(document.getElementById('ed-cp').value)||0;
+  const rtt=parseFloat(document.getElementById('ed-rtt').value)||0;
+  const job=document.getElementById('ed-job').value;
+  const role=document.getElementById('ed-role').value;
+  try{
+    await db.updateUser(uid,{cp_base:cp,rtt_base:rtt,job,role});
+    u.cp_base=cp;u.rtt_base=rtt;u.job=job;u.role=role;
+    notif('Profil mis à jour ✓','success');renderPage('profile-'+uid);
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+async function saveEmp(){
+  const fn=document.getElementById('efn').value.trim(),ln=document.getElementById('eln').value.trim();
+  const email=document.getElementById('eemail').value.trim(),job=document.getElementById('ejob').value.trim();
+  const entry=document.getElementById('eentry').value,role=document.getElementById('erole').value;
+  const cp=parseFloat(document.getElementById('ecp').value)||0,rtt=parseFloat(document.getElementById('ertt').value)||0;
+  if(!fn||!ln||!email||!entry){notif('Remplissez les champs obligatoires','error');return;}
+  const data={id:'u'+Date.now(),email,email2:null,pw:TPW,must_pw:true,name:`${fn} ${ln.toUpperCase()}`,role,job,entry,cp_base:cp,rtt_base:rtt};
+  try{
+    await db.createUser(data);USERS.push(data);RECUP[data.id]=[];
+    closeM('m-emp');['efn','eln','eemail','ejob','eentry'].forEach(i=>document.getElementById(i).value='');
+    notif(`${fn} ${ln} créé(e) ✓`,'success');renderPage('employees');
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+
+
+// ===== CANCEL REQUEST (employee) =====
+function openCancelReq(reqId, type, start, end, days) {
+  document.getElementById('cancel-req-id').value = reqId;
+  document.getElementById('cancel-req-sub').textContent = `${tb(type)} · ${fd(start)} → ${fd(end)} · ${days} j`;
+  document.getElementById('cancel-req-comment').value = '';
+  openM('m-cancel-req');
+}
+
+async function submitCancelReq() {
+  const reqId = document.getElementById('cancel-req-id').value;
+  const comment = document.getElementById('cancel-req-comment').value;
+  const r = REQUESTS.find(x => x.id === reqId);
+  if (!r) return;
+  // Create a cancellation request
+  const cancelData = {
+    id: 'r' + Date.now(),
+    user_id: CURRENT_USER.id,
+    type: r.type,
+    start_date: r.start_date,
+    end_date: r.end_date,
+    days: r.days,
+    status: 'pending',
+    comment: '[DEMANDE ANNULATION] ' + comment + ' (réf: ' + reqId + ')',
+    created_at: ymds(new Date())
+  };
+  try {
+    await db.createRequest(cancelData);
+    REQUESTS.unshift(cancelData);
+    closeM('m-cancel-req');
+    notif('Demande d\'annulation envoyée ✓ — Margaux sera notifiée', 'success');
+    renderPage(AP);
+  } catch(e) { notif('Erreur: ' + e.message, 'error'); }
+}
+
+// ===== EDIT REQUEST (admin) =====
+function openEditReq(reqId) {
+  const r = REQUESTS.find(x => x.id === reqId);
+  if (!r) return;
+  const emp = USERS.find(x => x.id === r.user_id);
+  document.getElementById('edit-req-id').value = reqId;
+  document.getElementById('edit-req-uid').value = r.user_id;
+  document.getElementById('edit-req-old-days').value = r.days;
+  document.getElementById('edit-req-old-type').value = r.type;
+  document.getElementById('edit-req-old-status').value = r.status;
+  document.getElementById('edit-req-sub').textContent = emp?.name + ' — ' + fd(r.start_date) + ' → ' + fd(r.end_date);
+  document.getElementById('edit-req-type').value = r.type;
+  document.getElementById('edit-req-start').value = r.start_date;
+  document.getElementById('edit-req-end').value = r.end_date;
+  document.getElementById('edit-req-status').value = r.status;
+  document.getElementById('edit-req-comment').value = r.comment || '';
+  document.getElementById('edit-req-half').value = 'full';
+  openM('m-edit-req');
+}
+
+async function saveEditReq() {
+  const reqId = document.getElementById('edit-req-id').value;
+  const uid = document.getElementById('edit-req-uid').value;
+  const oldDays = parseFloat(document.getElementById('edit-req-old-days').value);
+  const oldType = document.getElementById('edit-req-old-type').value;
+  const oldStatus = document.getElementById('edit-req-old-status').value;
+  const type = document.getElementById('edit-req-type').value;
+  const start = document.getElementById('edit-req-start').value;
+  const end = document.getElementById('edit-req-end').value;
+  const half = document.getElementById('edit-req-half').value;
+  const status = document.getElementById('edit-req-status').value;
+  const comment = document.getElementById('edit-req-comment').value;
+
+  if (!start || !end) { notif('Veuillez remplir les dates', 'error'); return; }
+  const days = half !== 'full' ? 0.5 : wdCount(start, end);
+  const halfLabel = half === 'am' ? ' (matin)' : half === 'pm' ? ' (après-midi)' : '';
+
+  try {
+    const u = USERS.find(x => x.id === uid);
+
+    // Restore old balance if old request was approved and after TODAY
+    if (oldStatus === 'approved' && reqId > 'r' + TODAY.replace(/-/g,'') === false) {
+      if (oldType === 'PL') { u.cp_base = +(u.cp_base + oldDays).toFixed(2); await db.updateUser(uid, {cp_base: u.cp_base}); }
+      if (oldType === 'RTT') { u.rtt_base = +(u.rtt_base + oldDays).toFixed(2); await db.updateUser(uid, {rtt_base: u.rtt_base}); }
+    }
+
+    // Apply new balance if new status is approved and after TODAY
+    if (status === 'approved' && start > TODAY) {
+      if (type === 'PL') { u.cp_base = Math.max(0, +(u.cp_base - days).toFixed(2)); await db.updateUser(uid, {cp_base: u.cp_base}); }
+      if (type === 'RTT') { u.rtt_base = Math.max(0, +(u.rtt_base - days).toFixed(2)); await db.updateUser(uid, {rtt_base: u.rtt_base}); }
+    }
+
+    await db.updateRequest(reqId, {type, start_date: start, end_date: end, days, status, comment: comment + halfLabel});
+    const r = REQUESTS.find(x => x.id === reqId);
+    if (r) { r.type=type; r.start_date=start; r.end_date=end; r.days=days; r.status=status; r.comment=comment+halfLabel; }
+
+    closeM('m-edit-req');
+    notif('Demande modifiée ✓', 'success');
+    renderPage(AP);
+  } catch(e) { notif('Erreur: ' + e.message, 'error'); }
+}
+// ===== ADMIN FUNCTIONS =====
+function pgAdmin(){
+  let h=`<div class="ptitle">&#9881;&#65039; Gestion admin</div><div class="psub">Poser, modifier ou annuler des jours pour les salari&#233;s</div>`;
+  
+  // Button to add request for employee
+  h+=`<div class="twrap"><div class="thead2"><span class="ttitle">Poser des jours pour un salari&#233;</span><button class="btn btn-dark btn-sm" onclick="openAdminReq()">+ Ajouter des jours</button></div>`;
+  h+=`<div style="padding:14px 16px;font-size:12px;color:var(--muted)">Utilisez ce bouton pour poser directement des jours approuv&#233;s pour n'importe quel salari&#233; (RTT, CP, maladie, r&#233;cup...).</div></div>`;
+
+  // All requests with cancel button
+  h+=`<div class="stitle">Toutes les demandes — avec possibilit&#233; d'annuler</div>`;
+  h+=`<div class="twrap"><table><thead><tr><th>Salari&#233;</th><th>Type</th><th>P&#233;riode</th><th>Jours</th><th>Statut</th><th>Action</th></tr></thead><tbody>`;
+  [...REQUESTS].forEach(r=>{
+    const e=USERS.find(x=>x.id===r.user_id);
+    const fut=isFuture(r.start_date);
+    h+=`<tr class="${fut?'row-future':''}"><td>${e?.name||'—'}</td><td>${tb(r.type)}</td><td>${fd(r.start_date)} → ${fd(r.end_date)}</td><td>${r.days}</td><td>${fut?`<span class="badge bfut">Planifi&#233;</span>`:sb(r.status)}</td>`;
+    h+=`<td><button class="btn-ref" onclick="adminDeleteReq('${r.id}','${r.user_id}','${r.type}',${r.days},'${r.status}','${r.start_date}')">Annuler</button></td></tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  return h;
+}
+
+function openAdminReq(){
+  // Populate employee dropdown
+  const sel=document.getElementById('admin-uid');
+  sel.innerHTML='';
+  USERS.filter(u=>u.id!=='admin').forEach(u=>{
+    const opt=document.createElement('option');opt.value=u.id;opt.textContent=u.name;sel.appendChild(opt);
+  });
+  ['admin-start','admin-end','admin-comment'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  openM('m-admin-req');
+}
+
+async function adminAddReq(){
+  const uid=document.getElementById('admin-uid').value;
+  const type=document.getElementById('admin-type').value;
+  const start=document.getElementById('admin-start').value;
+  const end=document.getElementById('admin-end').value;
+  const comment=document.getElementById('admin-comment').value;
+  if(!start||!end){notif('Veuillez remplir les dates','error');return;}
+  if(start>end){notif('La date de fin doit &#234;tre apr&#232;s le d&#233;but','error');return;}
+  const half=document.getElementById('admin-half')?.value||'full';
+  const halfLabel = half==='am'?' (matin)':half==='pm'?' (après-midi)':'';
+  const days = half!=='full' ? 0.5 : wdCount(start,end);
+  const data={id:'r'+Date.now(),user_id:uid,type,start_date:start,end_date:end,days,status:'approved',comment:comment+halfLabel,created_at:start};
+  try{
+    await db.createRequest(data);
+    REQUESTS.unshift(data);
+    // Note: balances are managed manually via payslip updates (cp_base/rtt_base)
+    // We do NOT auto-deduct future requests from the balance
+    closeM('m-admin-req');
+    notif('Jours ajout&#233;s ✓','success');
+    renderPage('admin');
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+async function adminDeleteReq(id,uid,type,days,status,startDate){
+  if(!confirm('Confirmer l\'annulation de cette demande ?'))return;
+  try{
+    await db.updateRequest(id,{status:'refused'});
+    const r=REQUESTS.find(x=>x.id===id);if(r)r.status='refused';
+    // Restore balance if it was approved and after base date
+    if(status==='approved'&&startDate>TODAY){
+      const u=USERS.find(x=>x.id===uid);
+      if(type==='PL'){u.cp_base=+(u.cp_base+Number(days)).toFixed(2);await db.updateUser(uid,{cp_base:u.cp_base});}
+      if(type==='RTT'){u.rtt_base=+(u.rtt_base+Number(days)).toFixed(2);await db.updateUser(uid,{rtt_base:u.rtt_base});}
+    }
+    notif('Demande annul&#233;e ✓','success');
+    renderPage('admin');
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+async function approveRecup(uid, recupId){
+  try{
+    await db.updateRecup(recupId,{status:'approved'});
+    const r=RECUP[uid]?.find(x=>x.id===recupId);
+    if(r) r.status='approved';
+    notif('Jours de récup validés ✓','success');
+    renderPage(AP);
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+async function refuseRecup(uid, recupId){
+  try{
+    await db.updateRecup(recupId,{status:'refused'});
+    const idx=RECUP[uid]?.findIndex(x=>x.id===recupId);
+    if(idx>=0) RECUP[uid].splice(idx,1);
+    notif('Jours de récup refusés','info');
+    renderPage(AP);
+  }catch(e){notif('Erreur: '+e.message,'error');}
+}
+
+function expCSV(){
+  const rows=[['Nom','Type','Début','Fin','Jours','Statut','Passé/Futur']];
+  REQUESTS.forEach(r=>{const u=USERS.find(x=>x.id===r.user_id);rows.push([u?.name||'',r.type,r.start_date,r.end_date,r.days,r.status,isFuture(r.start_date)?'Futur':'Passé']);});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8'}));
+  a.download=`holmes_absences_${ymds(new Date())}.csv`;a.click();notif('Export CSV ✓','success');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async ()=>{
+  emailjs.init(EJS_KEY);
+  updateLoginUI();
+  try {
+    // Try auto-login
+    const savedUid = localStorage.getItem('holmes_uid');
+    if(savedUid){
+      const u = await db.getUser(savedUid);
+      if(u){
+        CURRENT_USER=u;
+        await loadAllData();
+        document.getElementById('loading-screen').style.display='none';
+        document.getElementById('app').style.display='block';
+        renderApp();
+        return;
+      }
+    }
+  } catch(e) {
+    console.error('Init error:', e);
+  }
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+});
+</script>
+</body>
+</html>
